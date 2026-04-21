@@ -576,3 +576,60 @@ html, body {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Banner patrocinado ── */
+.sponsored-banner {
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border-mid);
+  background: var(--bg-card);
+  cursor: pointer;
+  overflow: hidden;
+  transition: opacity 0.15s;
+}
+.sponsored-banner:hover { opacity: 0.88; }
+
+.banner-tag {
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  padding: 6px 12px 0;
+  text-transform: uppercase;
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px 12px;
+}
+
+.banner-logo {
+  font-size: 24px;
+  width: 44px; height: 44px;
+  background: var(--blue-pale);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+@media (prefers-color-scheme: dark) {
+  .banner-logo { background: #1a2d42; }
+}
+
+.banner-text { flex: 1; }
+.banner-title { font-size: 14px; font-weight: 500; color: var(--text); }
+.banner-sub   { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.banner-cta {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--blue-mid);
+  background: var(--blue-pale);
+  padding: 6px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+@media (prefers-color-scheme: dark) {
+  .banner-cta { background: #1a2d42; color: var(--blue-light); }
+}
