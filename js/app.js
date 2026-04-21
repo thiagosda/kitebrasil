@@ -407,7 +407,27 @@ async function init() {
   applyWeatherData(weather, currentSpot);
   showLoading(false);
 
+  renderSeasonBanner();
   tryGPS();
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+function getSeasonBanner() {
+  const month = new Date().getMonth() + 1;
+  if (month >= 7 && month <= 1) return null;
+  if (month >= 2 && month <= 6) {
+    return {
+      type: 'low',
+      title: 'Baixa temporada',
+
+function renderSeasonBanner() {
+  const el = document.getElementById('season-banner');
+  if (!el) return;
+  const month = new Date().getMonth() + 1;
+  if (month >= 7 || month === 1) {
+    el.style.display = 'none';
+  } else {
+    el.style.display = 'flex';
+  }
+}
