@@ -57,19 +57,81 @@ function nowH() {
   return n.getHours() + n.getMinutes() / 60;
 }
 
+// ── Tide API (Open-Meteo Marine) ───────────────
+// Gratuita, sem limite, sem chave de API
+// Retorna nível do mar horário em metros (nível médio como referência)
+
+const tideCache = {};
+
+async function fetchTideData(spot) {
+  const key = spot.id + '_' + new Date().toISOString().substring(0, 10);
+  if (tideCache[key]) return tideCache[key];
+
+  const url = `https://marine-api.open-meteo.com/v1/marine`
+    + `?latitude=${spot.lat}&longitude=${spot.lon}`
+    + `&hourly=sea_level_height_msl`
+    + `&timezone=America%2FFortaleza&forecast_days=2`;
+
+  try {
+    const res  = await fetch(url);
+    const data = await res.json();
+    const raw  = data.hourly.sea_level_height_msl;
+    const times = data.hourly.time;
+
+    // Normaliza: shift para que o mínimo do dia seja ~0.3m (realidade do Ceará)
+    const todayStr = new Date().toISOString().substring(0, 10);
+    const todayVals = raw.filter((_, i) => times[i].startsWith(todayStr));
+    const minVal = Math.min(...todayVals);
+    const offset = 0.3 - minVal; // shift para mínimo real ~0.3m
+
+    const result = { times, levels: raw.map(v => +(v + offset).toFixed(2)) };
+    tideCache[key] = result;
+    return result;
+  } catch (e) {
+    console.warn('Tide API error', e);
+    return null;
+  }
+}
+
+function getTideLevelAt(tideData, h) {
+  if (!tideData) return tideH_fallback(h);
+  const hour = Math.floor(h);
+  const frac = h - hour;
+  const todayStr = new Date().toISOString().substring(0, 10);
+  const idx = tideData.times.findIndex(t => t === `${todayStr}T${pad(hour)}:00`);
+  if (idx < 0) return tideH_fallback(h);
+  // Interpolação linear entre horas
+  const curr = tideData.levels[idx];
+  const next  = tideData.levels[idx + 1] ?? curr;
+  return +(curr + (next - curr) * frac).toFixed(2);
+}
+
+// Fallback matemático caso a API falhe
+function tideH_fallback(h, offsetMin = 0) {
+  const t = (h + offsetMin / 60) / 24;
+  return 1.575 + 1.05 * Math.sin(2 * Math.PI * (t * 1.9323 - 0.27))
+               + 0.18 * Math.sin(4 * Math.PI * (t * 1.9323 - 0.27));
+}
+
 // ── Tide helpers ───────────────────────────────
 
+let _currentTideData = null; // carregado na init e ao trocar spot
+
 function tideH(h, offsetMin = 0) {
-  const t = (h + offsetMin / 60) / 24;
-  return 1.3 + 1.1 * Math.sin(2 * Math.PI * (t * 1.93 - 0.12))
-             + 0.15 * Math.sin(4 * Math.PI * (t * 1.93));
+  if (_currentTideData) return getTideLevelAt(_currentTideData, h + offsetMin / 60);
+  return tideH_fallback(h, offsetMin);
 }
 
 function tideStatus(spot) {
   const h   = nowH();
   const cur = tideH(h, spot.tideOffset);
-  const prv = tideH(h - 0.5, spot.tideOffset);
-  const pct = Math.round(((cur - 0.2) / 2.2) * 100);
+  const prv = tideH(h - 0.25, spot.tideOffset);
+  const todayVals = _currentTideData
+    ? _currentTideData.levels.filter((_, i) => _currentTideData.times[i].startsWith(new Date().toISOString().substring(0, 10)))
+    : [0.3, 2.7];
+  const minV = Math.min(...todayVals);
+  const maxV = Math.max(...todayVals);
+  const pct = Math.round(((cur - minV) / (maxV - minV)) * 100);
   return {
     level:  cur.toFixed(1),
     status: cur > prv ? 'Enchendo' : 'Secando',
@@ -80,30 +142,45 @@ function tideStatus(spot) {
 
 function getTideEvents(spot) {
   const events = [];
-  const half   = Array.from({ length: 48 }, (_, i) => i * 0.5);
-  let prev = tideH(0, spot.tideOffset);
+  const todayStr = new Date().toISOString().substring(0, 10);
 
-  for (let i = 1; i < half.length; i++) {
-    const cur  = tideH(half[i],     spot.tideOffset);
-    const next = tideH(half[i + 1] ?? half[i], spot.tideOffset);
-    const hh   = pad(Math.floor(half[i]));
-    const mm   = half[i] % 1 === 0.5 ? '30' : '00';
-
-    if (cur > prev && cur >= next)
-      events.push({ time: `${hh}:${mm}`, label: 'Maré alta',  height: `${cur.toFixed(1)} m`, detail: 'máxima', type: 'high' });
-    else if (cur < prev && cur <= next)
-      events.push({ time: `${hh}:${mm}`, label: 'Maré baixa', height: `${cur.toFixed(1)} m`, detail: 'mínima', type: 'low' });
-
-    prev = cur;
-    if (events.length >= 4) break;
+  if (_currentTideData) {
+    // Usa dados reais da API — encontra picos e vales do dia
+    const levels = _currentTideData.levels;
+    const times  = _currentTideData.times;
+    for (let i = 1; i < times.length - 1; i++) {
+      if (!times[i].startsWith(todayStr)) continue;
+      const prev = levels[i - 1], cur = levels[i], next = levels[i + 1];
+      const hhmm = times[i].substring(11, 16);
+      if (cur > prev && cur > next)
+        events.push({ time: hhmm, label: 'Maré alta',  height: cur.toFixed(1) + ' m', detail: 'máxima', type: 'high' });
+      else if (cur < prev && cur < next)
+        events.push({ time: hhmm, label: 'Maré baixa', height: cur.toFixed(1) + ' m', detail: 'mínima', type: 'low' });
+      if (events.length >= 4) break;
+    }
+  } else {
+    // Fallback matemático
+    const half = Array.from({ length: 48 }, (_, i) => i * 0.5);
+    let prev = tideH_fallback(0, spot.tideOffset);
+    for (let i = 1; i < half.length; i++) {
+      const cur  = tideH_fallback(half[i], spot.tideOffset);
+      const next = tideH_fallback(half[i + 1] ?? half[i], spot.tideOffset);
+      const hh = pad(Math.floor(half[i]));
+      const mm = half[i] % 1 === 0.5 ? '30' : '00';
+      if (cur > prev && cur > next)
+        events.push({ time: `${hh}:${mm}`, label: 'Maré alta',  height: cur.toFixed(1) + ' m', detail: 'máxima', type: 'high' });
+      else if (cur < prev && cur < next)
+        events.push({ time: `${hh}:${mm}`, label: 'Maré baixa', height: cur.toFixed(1) + ' m', detail: 'mínima', type: 'low' });
+      prev = cur;
+      if (events.length >= 4) break;
+    }
   }
 
   const t   = tideStatus(spot);
-  const now = { time: 'Agora', label: t.status, height: `${t.level} m`, detail: 'em tempo real', type: 'now' };
-  const at  = events.findIndex(e => parseInt(e.time) > nowH());
+  const now = { time: 'Agora', label: t.status, height: t.level + ' m', detail: 'em tempo real', type: 'now' };
+  const at  = events.findIndex(e => e.time > pad(Math.floor(nowH())) + ':' + pad(Math.round((nowH() % 1) * 60)));
   if (at >= 0) events.splice(at, 0, now);
   else         events.push(now);
-
   return events.slice(0, 5);
 }
 
@@ -153,6 +230,56 @@ async function fetchWeather(spot) {
   }
 }
 
+// ── Dica inteligente de maré ───────────────────
+
+function renderTideTip(windKnots, spot) {
+  const titleEl = document.getElementById('tide-tip-title');
+  const textEl  = document.getElementById('tide-tip-text');
+  const boxEl   = document.getElementById('tide-tip-box');
+  if (!titleEl || !textEl) return;
+
+  const t     = tideStatus(spot);
+  const level = parseFloat(t.level);
+  const rising = t.status === 'Enchendo';
+
+  // Sem vento suficiente: não dá pra kitar
+  if (windKnots < 10) {
+    if (boxEl) { boxEl.style.background = 'var(--amber-pale)'; boxEl.style.borderLeft = '3px solid var(--amber)'; }
+    titleEl.style.color = 'var(--amber-dark)';
+    textEl.style.color  = 'var(--amber-dark)';
+    titleEl.textContent = 'Sem condições para kitesurf';
+    textEl.textContent  = `Vento de ${windKnots} nós é insuficiente para kitar (mínimo ~12 nós). Aproveite para relaxar ou visitar as lagoas.`;
+    return;
+  }
+
+  // Vento fraco mas possível para iniciantes
+  if (windKnots < 14) {
+    titleEl.textContent = 'Condição para iniciantes';
+    textEl.textContent  = `Vento de ${windKnots} nós — fraco para avançados mas adequado para praticar em lagoa com pipa grande.`;
+    return;
+  }
+
+  // Vento bom — analisa a maré
+  if (windKnots >= 14) {
+    if (level > 2.5) {
+      titleEl.textContent = rising ? 'Maré alta e enchendo' : 'Maré alta e secando';
+      textEl.textContent  = rising
+        ? `Maré em ${level}m subindo. Bom para wave riding. Cuidado com a profundidade nas lagoas.`
+        : `Maré em ${level}m e vazando. Boa janela para freestyle no mar aberto. Aproveite antes de secar.`;
+    } else if (level < 0.8) {
+      titleEl.textContent = rising ? 'Maré baixa e enchendo' : 'Maré baixa';
+      textEl.textContent  = rising
+        ? `Maré em ${level}m subindo. Lagoas e rampas ficam expostas — ótimo para iniciantes e manobras rasas.`
+        : `Maré em ${level}m — mínima do dia. Ideal para sessões na lagoa e downwind. Mar pode estar raso.`;
+    } else {
+      // Maré média
+      const nextPeak = rising ? 'preamar' : 'baixamar';
+      titleEl.textContent = `Condição boa · vento ${windKnots} nós`;
+      textEl.textContent  = `Maré em ${level}m e ${t.status.toLowerCase()} em direção à ${nextPeak}. Boas condições para todos os níveis.`;
+    }
+  }
+}
+
 // ── Apply data to DOM ──────────────────────────
 
 function applyData(data, spot) {
@@ -181,6 +308,7 @@ function applyData(data, spot) {
   $('tide-bar').style.width          = `${t.pct}%`;
 
   if (data?.forecast?.length) renderForecast(data.forecast);
+  renderTideTip(wind, spot);
 }
 
 // ── Render functions ───────────────────────────
@@ -264,32 +392,45 @@ function renderTideChart() {
   if (!canvas) return;
   if (tideChart) { tideChart.destroy(); tideChart = null; }
 
-  const dark   = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const tc     = dark ? '#9c9a92' : '#888780';
-  const gc     = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
-  const hours  = Array.from({ length: 25 }, (_, i) => i);
-  const hts    = hours.map(h => +tideH(h, currentSpot.tideOffset).toFixed(2));
-  const nh     = nowH();
-  const nowVal = +tideH(nh, currentSpot.tideOffset).toFixed(2);
+  const dark     = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const tc       = dark ? '#9c9a92' : '#888780';
+  const gc       = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+  const todayStr = new Date().toISOString().substring(0, 10);
+  const nh       = nowH();
+
+  let labels = [], heights = [], nowIdx = -1;
+
+  if (_currentTideData) {
+    _currentTideData.times.forEach((t, i) => {
+      if (!t.startsWith(todayStr)) return;
+      const h = parseInt(t.substring(11, 13));
+      labels.push(h % 6 === 0 ? h + 'h' : '');
+      heights.push(_currentTideData.levels[i]);
+      if (Math.abs(h - nh) < 0.7) nowIdx = labels.length - 1;
+    });
+  } else {
+    const hours = Array.from({ length: 25 }, (_, i) => i);
+    labels  = hours.map(h => h % 6 === 0 ? h + 'h' : '');
+    heights = hours.map(h => +tideH_fallback(h, currentSpot.tideOffset).toFixed(2));
+    nowIdx  = Math.round(nh);
+  }
+
+  const nowDots = heights.map((v, i) => i === nowIdx ? v : null);
+  const maxH    = Math.ceil((Math.max(...heights.filter(Boolean)) + 0.3) * 2) / 2;
 
   tideChart = new Chart(canvas.getContext('2d'), {
     type: 'line',
     data: {
-      labels: hours.map(h => h % 6 === 0 ? `${h}h` : ''),
+      labels,
       datasets: [
-        {
-          data: hts, borderColor: '#185FA5', borderWidth: 2, fill: true,
+        { data: heights, borderColor: '#185FA5', borderWidth: 2, fill: true,
           backgroundColor: dark ? 'rgba(24,95,165,0.15)' : 'rgba(24,95,165,0.08)',
-          tension: 0.4, pointRadius: 0
-        },
-        {
-          data: hours.map(h => Math.abs(h - nh) < 0.5 ? nowVal : null),
-          borderColor: '#EF9F27', borderWidth: 0,
-          pointRadius: hours.map(h => Math.abs(h - nh) < 0.5 ? 5 : 0),
+          tension: 0.4, pointRadius: 0 },
+        { data: nowDots, borderColor: '#EF9F27', borderWidth: 0,
+          pointRadius: nowDots.map(v => v !== null ? 5 : 0),
           pointBackgroundColor: '#EF9F27',
           pointBorderColor: dark ? '#1c1c1a' : '#fff',
-          pointBorderWidth: 2, fill: false
-        }
+          pointBorderWidth: 2, fill: false }
       ]
     },
     options: {
@@ -297,7 +438,8 @@ function renderTideChart() {
       plugins: { legend: { display: false }, tooltip: { enabled: false } },
       scales: {
         x: { grid: { color: gc }, ticks: { color: tc, font: { size: 10 }, maxRotation: 0 } },
-        y: { min: 0, max: 3, grid: { color: gc }, ticks: { color: tc, font: { size: 10 }, stepSize: 1, callback: v => v + 'm' } }
+        y: { min: 0, max: maxH, grid: { color: gc },
+             ticks: { color: tc, font: { size: 10 }, callback: v => v + 'm' } }
       }
     }
   });
@@ -383,7 +525,12 @@ function navigate(screen) {
   const navEl = document.getElementById(navMap[screen] ?? 'nav-kitesurf');
   if (navEl) navEl.classList.add('active');
 
-  if (screen === 'tide')    { renderTideChart(); renderTideEvents(); }
+  if (screen === 'tide') {
+    renderTideChart();
+    renderTideEvents();
+    const cached = weatherCache[currentSpot.id];
+    renderTideTip(cached?.wind ?? 10, currentSpot);
+  }
   if (screen === 'schools') renderSchools();
 
   window.scrollTo(0, 0);
@@ -401,8 +548,13 @@ async function switchSpot(id) {
     if (el) el.value = id;
   });
 
-  const data = await fetchWeather(spot);
-  applyData(data, spot);
+  // Carrega maré e clima em paralelo para o novo spot
+  const [tideData, weatherData] = await Promise.all([
+    fetchTideData(spot),
+    fetchWeather(spot)
+  ]);
+  _currentTideData = tideData;
+  applyData(weatherData, spot);
 
   if (document.getElementById('screen-schools').classList.contains('active')) renderSchools();
   if (document.getElementById('screen-tide').classList.contains('active')) { renderTideChart(); renderTideEvents(); }
@@ -445,8 +597,13 @@ async function init() {
   document.getElementById('spot-selector')?.addEventListener('change', e => switchSpot(e.target.value));
   document.getElementById('spot-selector-schools')?.addEventListener('change', e => switchSpot(e.target.value));
 
-  const data = await fetchWeather(currentSpot);
-  applyData(data, currentSpot);
+  // Carrega dados de maré reais e clima em paralelo
+  const [tideData, weatherData] = await Promise.all([
+    fetchTideData(currentSpot),
+    fetchWeather(currentSpot)
+  ]);
+  _currentTideData = tideData;
+  applyData(weatherData, currentSpot);
 
   tryGPS();
 }
