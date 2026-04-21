@@ -323,11 +323,11 @@ function renderTideChart() {
 function navigate(screen) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const map = { 'home':'screen-home','tide':'screen-tide','school':'screen-school','schools':'screen-schools' };
-  const navMap = { 'home':'nav-home','tide':'nav-tide','school':'nav-schools','schools':'nav-schools' };
-  const target = document.getElementById(map[screen] || 'screen-home');
+  const map = { 'kitesurf':'screen-kitesurf','tide':'screen-tide','school':'screen-school','schools':'screen-schools' };
+  const navMap = { 'kitesurf':'nav-kitesurf','tide':'nav-tide','school':'nav-schools','schools':'nav-schools' };
+  const target = document.getElementById(map[screen] || 'screen-kitesurf');
   if (target) { target.classList.add('active'); target.classList.add('fade-in'); setTimeout(() => target.classList.remove('fade-in'), 300); }
-  const navTarget = document.getElementById(navMap[screen] || 'nav-home');
+  const navTarget = document.getElementById(navMap[screen] || 'nav-kitesurf');
   if (navTarget) navTarget.classList.add('active');
   if (screen === 'tide') { renderTideChart(); renderTideEvents(); }
   if (screen === 'schools') { renderSchoolsPage(); }
