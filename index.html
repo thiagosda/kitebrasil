@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Kite Intelligence — Preá, CE</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+
+    <div class="screen active" id="screen-home">
+      <div class="header">
+        <div class="status-bar">
+          <span id="current-time">9:41</span>
+          <span>Preá, CE</span>
+        </div>
+        <div class="hero">
+          <div class="hero-top">
+            <div>
+              <div class="hero-location">PREÁ · CEARÁ · BRASIL</div>
+              <div class="hero-title">Kite Intelligence</div>
+              <div class="hero-date" id="hero-date">Carregando...</div>
+            </div>
+            <div class="notif-dot"></div>
+          </div>
+          <div class="score-block">
+            <div class="score-num" id="score-num">9</div>
+            <div>
+              <div class="score-label">SCORE DO DIA</div>
+              <div class="score-desc" id="score-desc">Dia excelente</div>
+              <div class="score-sub" id="score-sub">Vento constante · Ideal para freestyle</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="section">
+          <div class="section-title">CONDIÇÕES AGORA</div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Vento</div>
+              <div><span class="stat-value" id="wind-speed">22</span><span class="stat-unit"> nós</span></div>
+              <div class="stat-dir" id="wind-dir">NE — nordeste</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Rajadas</div>
+              <div><span class="stat-value" id="wind-gust">26</span><span class="stat-unit"> nós</span></div>
+              <div class="stat-dir">estável</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Ondas</div>
+              <div><span class="stat-value">0.8</span><span class="stat-unit"> m</span></div>
+              <div class="stat-dir">período 8s</div>
+            </div>
+            <div class="stat-card" id="tide-card" onclick="navigate('tide')">
+              <div class="stat-label">Maré ↗</div>
+              <div><span class="stat-value" id="tide-level">1.2</span><span class="stat-unit"> m</span></div>
+              <div class="stat-dir" id="tide-status">enchendo</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">PREVISÃO 7 DIAS</div>
+          <div class="forecast-row" id="forecast-row"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">ESCOLAS EM PREÁ</div>
+          <div class="schools-list" id="schools-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-tide">
+      <div class="header">
+        <div class="status-bar">
+          <span id="tide-time">9:41</span>
+          <span>Preá, CE</span>
+        </div>
+        <div class="hero">
+          <div class="back-btn" onclick="navigate('home')">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="#85b7eb" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Início
+          </div>
+          <div class="hero-title">Maré hoje</div>
+          <div class="hero-date" id="tide-date">Preá · Ceará</div>
+          <div class="status-pill">
+            <div class="pill-dot" id="tide-dot"></div>
+            <span class="pill-text" id="tide-pill-text">Enchendo</span>
+            <span class="pill-level" id="tide-pill-level">1.2 m agora</span>
+          </div>
+          <div class="level-bar-wrap">
+            <div class="level-bar-bg">
+              <div class="level-bar-fill" id="tide-bar"></div>
+            </div>
+            <div class="level-labels">
+              <span class="level-label">Seca (0.2m)</span>
+              <span class="level-label">Cheia (2.4m)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="section">
+          <div class="section-title">GRÁFICO DO DIA</div>
+          <div style="position:relative;height:130px;width:100%">
+            <canvas id="tideChart"></canvas>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">HORÁRIOS DE HOJE</div>
+          <div class="tide-events" id="tide-events"></div>
+        </div>
+        <div class="section">
+          <div class="section-title">DICA PARA HOJE</div>
+          <div class="kite-tip">
+            <div class="tip-icon">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v5M6 9v1" stroke="#E1F5EE" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <div>
+              <div class="tip-title">Melhor janela: 14h às 17h</div>
+              <div class="tip-text">Maré baixando + vento forte de NE. Condição ideal para freestyle no mar aberto de Preá.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-school">
+      <div class="header">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>Preá, CE</span>
+        </div>
+        <div class="hero">
+          <div class="back-btn" onclick="navigate('home')">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="#85b7eb" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Escolas
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-top:4px">
+            <div class="school-logo-big" id="school-logo"></div>
+            <div>
+              <div class="open-badge" id="school-badge">Aberta agora</div>
+              <div class="hero-title" id="school-name-title">Preá Kite School</div>
+              <div class="hero-date" id="school-loc-title">Preá · Jericoacoara, CE</div>
+              <div class="rating-row">
+                <span class="stars-big">★★★★★</span>
+                <span class="rating-num" id="school-rating">4.9</span>
+                <span class="rating-count" id="school-reviews">128 avaliações</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="section">
+          <div class="action-row">
+            <button class="btn-primary" onclick="alert('Em breve: agendamento online!')">Agendar aula</button>
+            <button class="btn-secondary" id="school-contact-btn">Enviar mensagem</button>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">SOBRE A ESCOLA</div>
+          <div class="info-list" id="school-info"></div>
+        </div>
+        <div class="section">
+          <div class="section-title">ESPECIALIDADES</div>
+          <div class="tag-row" id="school-tags"></div>
+        </div>
+        <div class="section">
+          <div class="section-title">PACOTES</div>
+          <div class="packages" id="school-packages"></div>
+        </div>
+        <div class="section">
+          <div class="section-title">AVALIAÇÕES</div>
+          <div class="reviews" id="school-reviews-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-bar">
+      <div class="nav-item active" id="nav-home" onclick="navigate('home')">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+        <span>Início</span>
+      </div>
+      <div class="nav-item" id="nav-tide" onclick="navigate('tide')">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M2 15c2-3 4-3 6 0s4 3 6 0 4-3 6 0" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M2 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>
+        <span>Maré</span>
+      </div>
+      <div class="nav-item" id="nav-schools" onclick="navigate('schools-list-view')">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="7" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M8 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+        <span>Escolas</span>
+      </div>
+      <div class="nav-item" id="nav-profile" onclick="alert('Perfil em breve!')">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="8" r="3.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 19c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.2"/></svg>
+        <span>Perfil</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
