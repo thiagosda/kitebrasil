@@ -145,42 +145,67 @@ function getTideEvents(spot) {
   const todayStr = new Date().toISOString().substring(0, 10);
 
   if (_currentTideData) {
-    // Usa dados reais da API — encontra picos e vales do dia
-    const levels = _currentTideData.levels;
-    const times  = _currentTideData.times;
-    for (let i = 1; i < times.length - 1; i++) {
-      if (!times[i].startsWith(todayStr)) continue;
-      const prev = levels[i - 1], cur = levels[i], next = levels[i + 1];
-      const hhmm = times[i].substring(11, 16);
-      if (cur > prev && cur > next)
-        events.push({ time: hhmm, label: 'Maré alta',  height: cur.toFixed(1) + ' m', detail: 'máxima', type: 'high' });
-      else if (cur < prev && cur < next)
-        events.push({ time: hhmm, label: 'Maré baixa', height: cur.toFixed(1) + ' m', detail: 'mínima', type: 'low' });
+    const allTimes  = _currentTideData.times;
+    const allLevels = _currentTideData.levels;
+
+    // Índices do dia de hoje
+    const idx = allTimes.map((t, i) => t.startsWith(todayStr) ? i : -1).filter(i => i >= 0);
+    const lev = idx.map(i => allLevels[i]);
+
+    for (let j = 1; j < lev.length - 1; j++) {
+      const p = lev[j - 1], c = lev[j], n = lev[j + 1];
+      const isHigh = c > p && c > n;
+      const isLow  = c < p && c < n;
+      if (!isHigh && !isLow) continue;
+
+      // Interpolação quadrática — encontra o pico/vale exato dentro da hora
+      const denom = p - 2 * c + n;
+      const delta = denom !== 0 ? (p - n) / (2 * denom) : 0;
+      const exactH = j + delta;           // hora fracionária (ex: 6.85 = 06:51)
+      const hh = Math.floor(exactH);
+      const mm = Math.round((exactH - hh) * 60);
+      // Altura interpolada no pico exato
+      const exactLevel = c - (p - n) * delta / 4;
+
+      events.push({
+        time:   pad(hh) + ':' + pad(mm),
+        label:  isHigh ? 'Maré alta'  : 'Maré baixa',
+        height: exactLevel.toFixed(1) + ' m',
+        detail: isHigh ? 'máxima do dia' : 'mínima do dia',
+        type:   isHigh ? 'high' : 'low'
+      });
+
       if (events.length >= 4) break;
     }
   } else {
-    // Fallback matemático
+    // Fallback matemático com interpolação analítica
     const half = Array.from({ length: 48 }, (_, i) => i * 0.5);
     let prev = tideH_fallback(0, spot.tideOffset);
     for (let i = 1; i < half.length; i++) {
-      const cur  = tideH_fallback(half[i], spot.tideOffset);
+      const cur  = tideH_fallback(half[i],     spot.tideOffset);
       const next = tideH_fallback(half[i + 1] ?? half[i], spot.tideOffset);
       const hh = pad(Math.floor(half[i]));
       const mm = half[i] % 1 === 0.5 ? '30' : '00';
-      if (cur > prev && cur > next)
+      if (cur > prev && cur >= next)
         events.push({ time: `${hh}:${mm}`, label: 'Maré alta',  height: cur.toFixed(1) + ' m', detail: 'máxima', type: 'high' });
-      else if (cur < prev && cur < next)
+      else if (cur < prev && cur <= next)
         events.push({ time: `${hh}:${mm}`, label: 'Maré baixa', height: cur.toFixed(1) + ' m', detail: 'mínima', type: 'low' });
       prev = cur;
       if (events.length >= 4) break;
     }
   }
 
-  const t   = tideStatus(spot);
-  const now = { time: 'Agora', label: t.status, height: t.level + ' m', detail: 'em tempo real', type: 'now' };
-  const at  = events.findIndex(e => e.time > pad(Math.floor(nowH())) + ':' + pad(Math.round((nowH() % 1) * 60)));
+  // Ordena por horário
+  events.sort((a, b) => a.time.localeCompare(b.time));
+
+  // Insere o "Agora" na posição correta
+  const t      = tideStatus(spot);
+  const nowStr = pad(Math.floor(nowH())) + ':' + pad(Math.round((nowH() % 1) * 60));
+  const now    = { time: 'Agora', label: t.status, height: t.level + ' m', detail: 'em tempo real', type: 'now' };
+  const at     = events.findIndex(e => e.time > nowStr);
   if (at >= 0) events.splice(at, 0, now);
   else         events.push(now);
+
   return events.slice(0, 5);
 }
 
