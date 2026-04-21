@@ -10,20 +10,15 @@ const SCHOOLS = [
     reviews: 128,
     since: 2012,
     hours: '7h às 17h · todos os dias',
-    languages: 'PT · EN · ES',
-    instructors: '6 certificados IKO',
-    tags: ['Iniciantes', 'Freestyle', 'Wave', 'Kiteboarding', 'Equipamento incluso', 'Foil'],
-    highlightTags: ['Iniciantes', 'Freestyle'],
-    packages: [
-      { name: 'Aula experimental', desc: '1h · instrutor dedicado', price: 'R$ 180', unit: 'por pessoa', featured: false },
-      { name: 'Curso completo', desc: '9h · certificado IKO', price: 'R$ 1.200', unit: 'por pessoa', featured: true },
-      { name: 'Aperfeiçoamento', desc: '3h · nível intermediário', price: 'R$ 420', unit: 'por pessoa', featured: false },
-    ],
+    mapsUrl: 'https://maps.google.com/?q=Preá+Kite+School+Jericoacoara',
+    phone: '+5588999990001',
+    whatsapp: 'https://wa.me/5588999990001',
+    site: 'https://preakiteschool.com.br',
     reviewsList: [
-      { initials: 'LM', color: '#534AB7', textColor: '#EEEDFE', name: 'Lucas Mendes', date: 'há 3 dias · São Paulo, SP', stars: 5, text: 'Melhor experiência da viagem! Instrutor super paciente, aprendi a soltar a pipa no primeiro dia.' },
-      { initials: 'AC', color: '#993C1D', textColor: '#FAECE7', name: 'Ana Clara', date: 'há 1 semana · Lisboa, PT', stars: 5, text: 'Vim de Portugal só pra isso. Preá é incrível e a escola é top. Já marquei pra voltar em outubro.' },
+      { initials: 'LM', color: '#534AB7', textColor: '#EEEDFE', name: 'Lucas Mendes', date: 'há 3 dias', stars: 5, text: 'Melhor experiência da viagem! Instrutor super paciente, aprendi a soltar a pipa no primeiro dia.' },
+      { initials: 'AC', color: '#993C1D', textColor: '#FAECE7', name: 'Ana Clara', date: 'há 1 semana', stars: 5, text: 'Vim de Portugal só pra isso. Preá é incrível e a escola é top. Já marquei pra voltar em outubro.' },
+      { initials: 'RF', color: '#0F6E56', textColor: '#E1F5EE', name: 'Rafael F.', date: 'há 2 semanas', stars: 5, text: 'Estrutura impecável, equipamentos novos e instrutores muito atenciosos. Super recomendo!' },
     ],
-    contact: 'whatsapp://send?phone=5588999990001'
   },
   {
     id: 2,
@@ -37,18 +32,14 @@ const SCHOOLS = [
     reviews: 94,
     since: 2015,
     hours: '8h às 17h · todos os dias',
-    languages: 'PT · EN',
-    instructors: '4 certificados IKO',
-    tags: ['Iniciantes', 'Wave', 'SUP', 'Equipamento incluso'],
-    highlightTags: ['Wave', 'SUP'],
-    packages: [
-      { name: 'Aula experimental', desc: '1h · grupo pequeno', price: 'R$ 160', unit: 'por pessoa', featured: false },
-      { name: 'Pacote wave', desc: '6h · foco em ondas', price: 'R$ 980', unit: 'por pessoa', featured: true },
-    ],
+    mapsUrl: 'https://maps.google.com/?q=Wind+Kite+Brasil+Preá',
+    phone: '+5588999990002',
+    whatsapp: 'https://wa.me/5588999990002',
+    site: null,
     reviewsList: [
-      { initials: 'MF', color: '#854F0B', textColor: '#FAEEDA', name: 'Marco Ferreira', date: 'há 5 dias · Rio de Janeiro, RJ', stars: 5, text: 'Instrutores incríveis, estrutura ótima. Aprendi wave riding em 3 dias!' },
+      { initials: 'MF', color: '#854F0B', textColor: '#FAEEDA', name: 'Marco Ferreira', date: 'há 5 dias', stars: 5, text: 'Instrutores incríveis, estrutura ótima. Aprendi wave riding em 3 dias!' },
+      { initials: 'JS', color: '#3C3489', textColor: '#EEEDFE', name: 'Julia S.', date: 'há 3 semanas', stars: 4, text: 'Ótima escola, vento excelente em Preá. Voltarei com certeza no próximo verão.' },
     ],
-    contact: 'whatsapp://send?phone=5588999990002'
   }
 ];
 
@@ -60,12 +51,4 @@ const FORECAST = [
   { day: 'Sex',  score: 8, wind: 20, active: false },
   { day: 'Sáb',  score: 9, wind: 23, active: false },
   { day: 'Dom',  score: 9, wind: 24, active: false },
-];
-
-const TIDE_EVENTS = [
-  { time: '02:14', label: 'Maré baixa',  height: '0.2 m', detail: 'mínima do dia',       type: 'low'  },
-  { time: '08:37', label: 'Maré alta',   height: '2.4 m', detail: 'máxima da manhã',     type: 'high' },
-  { time: 'Agora', label: 'Enchendo',    height: '1.2 m', detail: 'subindo desde 06:10', type: 'now'  },
-  { time: '14:52', label: 'Maré baixa',  height: '0.4 m', detail: 'boa pra lagoa',       type: 'low'  },
-  { time: '21:18', label: 'Maré alta',   height: '2.1 m', detail: 'máxima da noite',     type: 'high' },
 ];
