@@ -3,7 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KiteInforma — Ceará</title>
+  <title>KiteInforma — Condições de Kitesurf no Ceará</title>
+
+  <!-- SEO -->
+  <meta name="description" content="KiteInforma: condições de vento, maré e ondas em tempo real para kitesurf no Ceará. Preá, Jericoacoara, Cumbuco e mais 10 praias.">
+  <meta name="keywords"    content="kitesurf ceará, previsão vento preá, kite jericoacoara, maré cumbuco, kitesurf brasil">
+  <meta name="author"      content="KiteInforma">
+  <meta name="theme-color" content="#1a3a5c">
+
+  <!-- Open Graph (WhatsApp, Facebook) -->
+  <meta property="og:title"       content="KiteInforma — Kitesurf no Ceará">
+  <meta property="og:description" content="Vento, maré e ondas em tempo real para 13 praias do Ceará.">
+  <meta property="og:type"        content="website">
+  <meta property="og:url"         content="https://kiteinforma.com.br">
+
+  <!-- PWA -->
+  <meta name="mobile-web-app-capable"      content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title"  content="KiteInforma">
+
   <link rel="stylesheet" href="css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
@@ -87,6 +105,21 @@
       <div class="section">
         <div class="section-title">PREVISÃO 7 DIAS</div>
         <div class="forecast-row" id="forecast-row"></div>
+      </div>
+
+      <!-- ── Banner patrocinado ── -->
+      <div class="section" id="banner-section">
+        <div class="sponsored-banner" id="sponsored-banner" onclick="bannerClick()">
+          <div class="banner-tag">Patrocinado</div>
+          <div class="banner-content">
+            <div class="banner-logo">🪁</div>
+            <div class="banner-text">
+              <div class="banner-title">Anuncie aqui</div>
+              <div class="banner-sub">Alcance kitesurfistas de todo o Brasil</div>
+            </div>
+            <div class="banner-cta">Saiba mais</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -174,6 +207,20 @@
     <div class="content">
       <div class="section">
         <div class="schools-list" id="schools-list-page"></div>
+      </div>
+      <!-- Banner patrocinado escolas -->
+      <div class="section">
+        <div class="sponsored-banner" onclick="bannerClick()">
+          <div class="banner-tag">Patrocinado</div>
+          <div class="banner-content">
+            <div class="banner-logo">🏄</div>
+            <div class="banner-text">
+              <div class="banner-title">Sua escola aqui</div>
+              <div class="banner-sub">Apareça para milhares de kitesurfistas</div>
+            </div>
+            <div class="banner-cta">Anunciar</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -289,5 +336,11 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
+<script>
+  // Banner de monetização — troque a URL pelo link do anunciante
+  function bannerClick() {
+    window.open('mailto:contato@kiteinforma.com.br?subject=Quero anunciar no KiteInforma', '_blank');
+  }
+</script>
 </body>
 </html>
