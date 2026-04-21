@@ -359,3 +359,27 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
 
 .fade-in { animation: fadeIn 0.25s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+.spot-selector-wrap {
+  display: flex; align-items: center; gap: 8px;
+  margin: 10px 0 12px;
+}
+.spot-select {
+  flex: 1;
+  background: rgba(255,255,255,0.1);
+  color: #e6f1fb;
+  border: 0.5px solid rgba(133,183,235,0.3);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  font-size: 14px; font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2385b7eb' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+.spot-select:focus { outline: none; border-color: rgba(133,183,235,0.6); }
+.spot-select option, .spot-select optgroup { background: #1a3a5c; color: #e6f1fb; }
