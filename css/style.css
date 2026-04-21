@@ -324,5 +324,38 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
 .nav-item.active { color: var(--blue-mid); }
 .nav-item:hover { color: var(--text); }
 
+.contact-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.contact-btn-phone, .contact-btn-whatsapp, .contact-btn-site {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 12px 8px; border-radius: var(--radius); border: 0.5px solid var(--border-mid);
+  background: var(--bg-surface); color: var(--text); font-size: 12px; font-weight: 500;
+  cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s;
+}
+.contact-btn-phone:hover, .contact-btn-whatsapp:hover, .contact-btn-site:hover { background: var(--bg-card); }
+.contact-btn-whatsapp { color: #1D9E75; border-color: #9FE1CB; background: #E1F5EE; }
+.contact-btn-whatsapp:hover { background: #c8f0e2; }
+@media (prefers-color-scheme: dark) {
+  .contact-btn-whatsapp { background: #0d2d1e; border-color: #0F6E56; color: #9FE1CB; }
+  .contact-btn-whatsapp:hover { background: #132d20; }
+}
+.contact-btn-site.disabled { opacity: 0.35; pointer-events: none; }
+
+.map-box { border-radius: var(--radius); overflow: hidden; border: 0.5px solid var(--border); }
+.map-placeholder {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 20px; background: var(--bg-surface);
+  color: var(--blue-mid); font-size: 14px; font-weight: 500;
+  cursor: pointer; border-radius: var(--radius);
+  transition: background 0.15s;
+}
+.map-placeholder:hover { background: var(--blue-pale); }
+@media (prefers-color-scheme: dark) { .map-placeholder:hover { background: #1a2d42; } }
+
+.section-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.section-title-row .section-title { margin-bottom: 0; }
+.google-rating { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 500; color: var(--text); }
+.google-rating .stars { color: #EF9F27; font-size: 12px; }
+.google-rating .count { font-size: 11px; color: var(--text-muted); font-weight: 400; }
+
 .fade-in { animation: fadeIn 0.25s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
