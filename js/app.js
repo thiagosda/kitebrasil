@@ -218,6 +218,7 @@ function openSchool(id) {
   currentSchool = SCHOOLS.find(s => s.id === id);
   if (!currentSchool) return;
   const s = currentSchool;
+
   document.getElementById('school-logo').textContent = s.initials;
   document.getElementById('school-logo').style.background = s.color;
   document.getElementById('school-name-title').textContent = s.name;
@@ -225,26 +226,31 @@ function openSchool(id) {
   document.getElementById('school-rating').textContent = s.rating;
   document.getElementById('school-reviews').textContent = s.reviews + ' avaliações';
   document.getElementById('school-badge').textContent = s.open ? 'Aberta agora' : (s.openTime || 'Fechada');
-  document.getElementById('school-contact-btn').onclick = () => window.location.href = s.contact;
-  document.getElementById('school-info').innerHTML = `
-    <div class="info-row"><span class="info-key">Funcionamento</span><span class="info-val">${s.hours}</span></div>
-    <div class="info-row"><span class="info-key">Idiomas</span><span class="info-val">${s.languages}</span></div>
-    <div class="info-row"><span class="info-key">Instrutores</span><span class="info-val">${s.instructors}</span></div>
-    <div class="info-row"><span class="info-key">Na praia desde</span><span class="info-val">${s.since}</span></div>`;
-  document.getElementById('school-tags').innerHTML = s.tags.map(t =>
-    `<span class="tag ${s.highlightTags.includes(t) ? 'highlight' : ''}">${t}</span>`).join('');
-  document.getElementById('school-packages').innerHTML = s.packages.map(p => `
-    <div class="pkg-card ${p.featured ? 'featured' : ''}">
-      <div>
-        ${p.featured ? '<div class="pkg-badge">Mais popular</div>' : ''}
-        <div class="pkg-name">${p.name}</div>
-        <div class="pkg-desc">${p.desc}</div>
-      </div>
-      <div>
-        <div class="pkg-price">${p.price}</div>
-        <div class="pkg-unit">${p.unit}</div>
-      </div>
-    </div>`).join('');
+
+  const phoneBtn = document.getElementById('school-phone-btn');
+  phoneBtn.onclick = () => window.location.href = 'tel:' + s.phone;
+
+  const waBtn = document.getElementById('school-whatsapp-btn');
+  waBtn.onclick = () => window.open(s.whatsapp, '_blank');
+
+  const siteBtn = document.getElementById('school-site-btn');
+  if (s.site) {
+    siteBtn.classList.remove('disabled');
+    siteBtn.onclick = () => window.open(s.site, '_blank');
+  } else {
+    siteBtn.classList.add('disabled');
+    siteBtn.onclick = null;
+  }
+
+  const mapLink = document.getElementById('school-map-link');
+  mapLink.onclick = () => window.open(s.mapsUrl, '_blank');
+
+  document.getElementById('school-google-rating').innerHTML = `
+    <span class="stars">${'★'.repeat(Math.round(s.rating))}</span>
+    <span>${s.rating}</span>
+    <span class="count">(${s.reviews} no Google)</span>
+  `;
+
   document.getElementById('school-reviews-list').innerHTML = s.reviewsList.map(r => `
     <div class="review-card">
       <div class="review-header">
@@ -256,6 +262,7 @@ function openSchool(id) {
       </div>
       <div class="rev-text">${r.text}</div>
     </div>`).join('');
+
   navigate('school');
 }
 
