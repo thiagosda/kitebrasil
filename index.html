@@ -31,10 +31,6 @@
   <!-- ── Tela: Kitesurf ── -->
   <div class="screen active" id="screen-kitesurf">
     <div class="header">
-      <div class="status-bar">
-        <span class="clock">9:41</span>
-        <span>Ceará, BR</span>
-      </div>
       <div class="hero">
         <div class="hero-top">
           <div>
@@ -167,10 +163,6 @@
   <!-- ── Tela: Maré ── -->
   <div class="screen" id="screen-tide">
     <div class="header">
-      <div class="status-bar">
-        <span class="clock">9:41</span>
-        <span>Ceará, BR</span>
-      </div>
       <div class="hero">
         <div class="back-btn" onclick="navigate('kitesurf')">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -190,8 +182,8 @@
             <div class="level-bar-fill" id="tide-bar" style="width:0%"></div>
           </div>
           <div class="level-labels">
-            <span class="level-label">Seca (0.2m)</span>
-            <span class="level-label">Cheia (2.4m)</span>
+            <span class="level-label">Seca (~0.4m)</span>
+            <span class="level-label">Cheia (~2.7m)</span>
           </div>
         </div>
       </div>
@@ -210,15 +202,15 @@
       </div>
       <div class="section">
         <div class="section-title">DICA PARA HOJE</div>
-        <div class="kite-tip">
+        <div class="kite-tip" id="tide-tip-box">
           <div class="tip-icon">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path d="M6 1v5M6 9v1" stroke="#E1F5EE" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
           </div>
           <div>
-            <div class="tip-title">Melhor janela: 14h às 17h</div>
-            <div class="tip-text">Maré baixando + vento forte. Condição ideal para freestyle.</div>
+            <div class="tip-title" id="tide-tip-title">Carregando...</div>
+            <div class="tip-text"  id="tide-tip-text"></div>
           </div>
         </div>
       </div>
@@ -228,10 +220,6 @@
   <!-- ── Tela: Escolas ── -->
   <div class="screen" id="screen-schools">
     <div class="header">
-      <div class="status-bar">
-        <span class="clock">9:41</span>
-        <span>Ceará, BR</span>
-      </div>
       <div class="hero">
         <div class="hero-location">CEARÁ · BRASIL</div>
         <div class="hero-title" id="schools-page-title">Escolas</div>
@@ -266,10 +254,6 @@
   <!-- ── Tela: Perfil da Escola ── -->
   <div class="screen" id="screen-school">
     <div class="header">
-      <div class="status-bar">
-        <span class="clock">9:41</span>
-        <span>Ceará, BR</span>
-      </div>
       <div class="hero">
         <div class="back-btn" onclick="navigate('schools')">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
