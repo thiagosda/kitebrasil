@@ -690,3 +690,73 @@ html, body {
 @media (prefers-color-scheme: dark) {
   .ad-btn { background: #1a2d42; color: var(--blue-light); }
 }
+
+/* ── Banner carrossel ── */
+.banner-carousel {
+  width: 100%;
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+}
+
+.banner-track {
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.banner-slide {
+  flex: 0 0 100%;
+  min-width: 100%;
+  cursor: pointer;
+}
+
+.banner-slide-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  min-height: 76px;
+}
+
+.bs-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.bs-body  { flex: 1; min-width: 0; }
+.bs-tag   { font-size: 9px; font-weight: 500; color: rgba(255,255,255,0.5); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 2px; }
+.bs-title { font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bs-sub   { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.bs-arrow {
+  font-size: 22px;
+  color: rgba(255,255,255,0.4);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Dots */
+.banner-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--border-mid);
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.dot.active {
+  background: var(--blue-mid);
+  transform: scale(1.3);
+}
