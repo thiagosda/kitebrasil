@@ -334,7 +334,7 @@ async function init() {
   const tideDateEl = document.getElementById('tide-date');
   if (dateEl) dateEl.textContent = formatDate();
   if (tideDateEl) tideDateEl.textContent = 'Preá · ' + formatDate();
-  renderSchoolsList();
+  renderSchoolsPage();
   const weatherData = await fetchWeatherData();
   applyWeatherData(weatherData);
 }
