@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KiteInforma — Ceará</title>
   <link rel="stylesheet" href="css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -40,6 +40,16 @@
         </div>
       </div>
       <div class="content">
+        <div id="season-banner" class="season-banner" style="display:none">
+          <div class="season-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+          <div class="season-text">
+            <div class="season-title">Baixa temporada</div>
+            <div class="season-sub">Ventos mais fracos agora · Alta temporada: julho a janeiro</div>
+          </div>
+        </div>
+
         <div class="section">
           <div class="section-title">CONDIÇÕES AGORA</div>
           <div class="stats-grid">
@@ -58,7 +68,7 @@
               <div><span class="stat-value" id="wave-height">—</span><span class="stat-unit"> m</span></div>
               <div class="stat-dir" id="wave-period">—</div>
             </div>
-            <div class="stat-card" id="tide-card" onclick="navigate('tide')">
+            <div class="stat-card clickable" id="tide-card" onclick="navigate('tide')">
               <div class="stat-label">Maré ↗</div>
               <div><span class="stat-value" id="tide-level">—</span><span class="stat-unit"> m</span></div>
               <div class="stat-dir" id="tide-status">—</div>
