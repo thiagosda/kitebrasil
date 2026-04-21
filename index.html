@@ -107,37 +107,58 @@
         <div class="forecast-row" id="forecast-row"></div>
       </div>
 
-      <!-- ── Banners patrocinados ── -->
+      <!-- ── Banner rotativo ── -->
       <div class="section" id="banner-section">
-        <div class="ads-label">Patrocinados</div>
-        <div class="ads-grid">
-          <!-- Anúncio 1: Escola -->
-          <div class="ad-card" onclick="window.open('https://preakiteschool.com.br','_blank')">
-            <div class="ad-icon" style="background:#E1F5EE;color:#0F6E56">🎓</div>
-            <div class="ad-body">
-              <div class="ad-title">Preá Kite School</div>
-              <div class="ad-sub">Aulas para todos os níveis</div>
+        <div class="ads-label">Patrocinado</div>
+        <div class="banner-carousel">
+          <div class="banner-track" id="banner-track">
+
+            <!-- Banner 1: Escola de kite -->
+            <div class="banner-slide" onclick="window.open('https://preakiteschool.com.br','_blank')">
+              <div class="banner-slide-inner" style="background:linear-gradient(135deg,#0a2a40,#1a3a5c)">
+                <div class="bs-icon" style="background:#E1F5EE;color:#0F6E56">🎓</div>
+                <div class="bs-body">
+                  <div class="bs-tag">Escola Parceira</div>
+                  <div class="bs-title">Preá Kite School</div>
+                  <div class="bs-sub">Aulas para todos os níveis · Preá, CE</div>
+                </div>
+                <div class="bs-arrow">›</div>
+              </div>
             </div>
-            <div class="ad-btn">Ver</div>
-          </div>
-          <!-- Anúncio 2: Equipamento -->
-          <div class="ad-card" onclick="window.open('https://wa.me/5588999990001','_blank')">
-            <div class="ad-icon" style="background:#FAEEDA;color:#854F0B">🪁</div>
-            <div class="ad-body">
-              <div class="ad-title">Aluguel de Kite</div>
-              <div class="ad-sub">Equipamentos novos · Preá</div>
+
+            <!-- Banner 2: Aluguel de equipamento -->
+            <div class="banner-slide" onclick="window.open('https://wa.me/5588999990001','_blank')">
+              <div class="banner-slide-inner" style="background:linear-gradient(135deg,#2d1a00,#4a2e00)">
+                <div class="bs-icon" style="background:#FAEEDA;color:#854F0B">🪁</div>
+                <div class="bs-body">
+                  <div class="bs-tag">Equipamentos</div>
+                  <div class="bs-title">Aluguel de Kite</div>
+                  <div class="bs-sub">Equipamentos novos · Reserve pelo WhatsApp</div>
+                </div>
+                <div class="bs-arrow">›</div>
+              </div>
             </div>
-            <div class="ad-btn">Ver</div>
+
+            <!-- Banner 3: Transfer / transporte -->
+            <div class="banner-slide" onclick="window.open('https://wa.me/5588999990002','_blank')">
+              <div class="banner-slide-inner" style="background:linear-gradient(135deg,#0a2d1a,#0f4a2a)">
+                <div class="bs-icon" style="background:#E1F5EE;color:#1D9E75">🚐</div>
+                <div class="bs-body">
+                  <div class="bs-tag">Transfer</div>
+                  <div class="bs-title">Fortaleza → Preá</div>
+                  <div class="bs-sub">Saídas diárias · Conforto e pontualidade</div>
+                </div>
+                <div class="bs-arrow">›</div>
+              </div>
+            </div>
+
           </div>
-        </div>
-        <!-- Anúncio 3: Banner largo (pousada/transfer) -->
-        <div class="ad-card ad-wide" style="margin-top:8px" onclick="window.open('https://wa.me/5588999990001','_blank')">
-          <div class="ad-icon" style="background:#E6F1FB;color:#185FA5">🏄</div>
-          <div class="ad-body">
-            <div class="ad-title">Transfer Fortaleza → Preá</div>
-            <div class="ad-sub">Saídas diárias · Reserve pelo WhatsApp</div>
+          <!-- Indicadores de posição -->
+          <div class="banner-dots" id="banner-dots">
+            <span class="dot active" onclick="goToSlide(0)"></span>
+            <span class="dot"        onclick="goToSlide(1)"></span>
+            <span class="dot"        onclick="goToSlide(2)"></span>
           </div>
-          <div class="ad-btn">Reservar</div>
         </div>
       </div>
     </div>
@@ -354,10 +375,39 @@
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script>
-  // Banner de monetização — troque a URL pelo link do anunciante
-  function bannerClick() {
-    window.open('mailto:contato@kiteinforma.com.br?subject=Quero anunciar no KiteInforma', '_blank');
-  }
+// ── Banner carrossel ──────────────────────────
+let bannerIndex  = 0;
+const TOTAL_SLIDES = 3;
+let bannerTimer  = null;
+
+function goToSlide(n) {
+  bannerIndex = (n + TOTAL_SLIDES) % TOTAL_SLIDES;
+  const track = document.getElementById('banner-track');
+  if (track) track.style.transform = `translateX(-${bannerIndex * 100}%)`;
+  document.querySelectorAll('.dot').forEach((d, i) =>
+    d.classList.toggle('active', i === bannerIndex)
+  );
+}
+
+function nextSlide() { goToSlide(bannerIndex + 1); }
+
+function startBannerTimer() {
+  bannerTimer = setInterval(nextSlide, 4000);
+}
+
+function pauseBannerOnHover() {
+  const track = document.getElementById('banner-track');
+  if (!track) return;
+  track.addEventListener('mouseenter', () => clearInterval(bannerTimer));
+  track.addEventListener('mouseleave', startBannerTimer);
+  track.addEventListener('touchstart', () => clearInterval(bannerTimer), { passive: true });
+  track.addEventListener('touchend',   startBannerTimer, { passive: true });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  startBannerTimer();
+  pauseBannerOnHover();
+});
 </script>
 </body>
 </html>
