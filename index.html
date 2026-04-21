@@ -107,18 +107,37 @@
         <div class="forecast-row" id="forecast-row"></div>
       </div>
 
-      <!-- ── Banner patrocinado ── -->
+      <!-- ── Banners patrocinados ── -->
       <div class="section" id="banner-section">
-        <div class="sponsored-banner" id="sponsored-banner" onclick="bannerClick()">
-          <div class="banner-tag">Patrocinado</div>
-          <div class="banner-content">
-            <div class="banner-logo">🪁</div>
-            <div class="banner-text">
-              <div class="banner-title">Anuncie aqui</div>
-              <div class="banner-sub">Alcance kitesurfistas de todo o Brasil</div>
+        <div class="ads-label">Patrocinados</div>
+        <div class="ads-grid">
+          <!-- Anúncio 1: Escola -->
+          <div class="ad-card" onclick="window.open('https://preakiteschool.com.br','_blank')">
+            <div class="ad-icon" style="background:#E1F5EE;color:#0F6E56">🎓</div>
+            <div class="ad-body">
+              <div class="ad-title">Preá Kite School</div>
+              <div class="ad-sub">Aulas para todos os níveis</div>
             </div>
-            <div class="banner-cta">Saiba mais</div>
+            <div class="ad-btn">Ver</div>
           </div>
+          <!-- Anúncio 2: Equipamento -->
+          <div class="ad-card" onclick="window.open('https://wa.me/5588999990001','_blank')">
+            <div class="ad-icon" style="background:#FAEEDA;color:#854F0B">🪁</div>
+            <div class="ad-body">
+              <div class="ad-title">Aluguel de Kite</div>
+              <div class="ad-sub">Equipamentos novos · Preá</div>
+            </div>
+            <div class="ad-btn">Ver</div>
+          </div>
+        </div>
+        <!-- Anúncio 3: Banner largo (pousada/transfer) -->
+        <div class="ad-card ad-wide" style="margin-top:8px" onclick="window.open('https://wa.me/5588999990001','_blank')">
+          <div class="ad-icon" style="background:#E6F1FB;color:#185FA5">🏄</div>
+          <div class="ad-body">
+            <div class="ad-title">Transfer Fortaleza → Preá</div>
+            <div class="ad-sub">Saídas diárias · Reserve pelo WhatsApp</div>
+          </div>
+          <div class="ad-btn">Reservar</div>
         </div>
       </div>
     </div>
@@ -210,16 +229,14 @@
       </div>
       <!-- Banner patrocinado escolas -->
       <div class="section">
-        <div class="sponsored-banner" onclick="bannerClick()">
-          <div class="banner-tag">Patrocinado</div>
-          <div class="banner-content">
-            <div class="banner-logo">🏄</div>
-            <div class="banner-text">
-              <div class="banner-title">Sua escola aqui</div>
-              <div class="banner-sub">Apareça para milhares de kitesurfistas</div>
-            </div>
-            <div class="banner-cta">Anunciar</div>
+        <div class="ads-label">Patrocinado</div>
+        <div class="ad-card ad-wide" onclick="window.open('mailto:anuncie@kiteinforma.com.br','_blank')">
+          <div class="ad-icon" style="background:#EAF3DE;color:#27500A">⭐</div>
+          <div class="ad-body">
+            <div class="ad-title">Destaque sua escola aqui</div>
+            <div class="ad-sub">Alcance kitesurfistas do mundo todo</div>
           </div>
+          <div class="ad-btn">Anunciar</div>
         </div>
       </div>
     </div>
