@@ -70,7 +70,7 @@ async function fetchTideData(spot) {
   const url = `https://marine-api.open-meteo.com/v1/marine`
     + `?latitude=${spot.lat}&longitude=${spot.lon}`
     + `&hourly=sea_level_height_msl`
-    + `&timezone=America%2FFortaleza&forecast_days=2`;
+    + `&timezone=America%2FFortaleza&forecast_days=7`;
 
   try {
     const res  = await fetch(url);
@@ -151,7 +151,154 @@ function tideStatus(spot) {
   };
 }
 
-function getTideEvents(spot) {
+// ── Extrai todos os eventos de maré de N dias ──
+
+function extractAllTideEvents(tideData) {
+  if (!tideData) return [];
+  const raw    = tideData.levels;
+  const times  = tideData.times;
+  const events = [];
+  const days   = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+  for (let i = 1; i < raw.length - 1; i++) {
+    const p = raw[i-1], c = raw[i], n = raw[i+1];
+    const isHigh = c > p && c > n;
+    const isLow  = c < p && c < n;
+    if (!isHigh && !isLow) continue;
+
+    // Interpolação quadrática para horário exato
+    const denom  = p - 2*c + n;
+    const delta  = denom !== 0 ? (p - n) / (2 * denom) : 0;
+    const exactLevel = +(c - (p - n) * delta / 4).toFixed(1);
+
+    // Converte índice fracionário em hora local de Fortaleza
+    const baseMs   = new Date(times[i] + ':00-03:00').getTime();
+    const exactMs  = baseMs + delta * 3600000;
+    const dt       = new Date(exactMs);
+    // Hora local Fortaleza
+    const localStr = dt.toLocaleString('sv-SE', { timeZone: 'America/Fortaleza' });
+    const [datePart, timePart] = localStr.split(' ');
+    const [hh, mm] = timePart.split(':');
+    const dtLocal  = new Date(datePart + 'T' + timePart + '-03:00');
+
+    events.push({
+      dateKey:  datePart,                           // "2026-04-21"
+      dayName:  days[dtLocal.getDay()],             // "Ter"
+      dateDisp: dtLocal.getDate() + '/' + pad(dtLocal.getMonth()+1), // "21/04"
+      time:     pad(hh) + ':' + pad(mm),            // "06:51"
+      type:     isHigh ? 'high' : 'low',
+      label:    isHigh ? 'Maré alta' : 'Maré baixa',
+      level:    String(exactLevel),
+    });
+  }
+  return events;
+}
+
+let _allTideEvents = [];   // todos os eventos de 7 dias
+let _selectedDay   = null; // data selecionada no tab "2026-04-21"
+
+// ── Próxima maré ──────────────────────────────
+
+function renderNextTide() {
+  const now    = new Date();
+  const nowStr = now.toLocaleString('sv-SE', { timeZone: 'America/Fortaleza' }).replace(' ', 'T');
+  const next   = _allTideEvents.find(e => (e.dateKey + 'T' + e.time + ':00') > nowStr);
+  if (!next) return;
+
+  const el = id => document.getElementById(id);
+  const isHigh = next.type === 'high';
+  const isTomorrow = next.dateKey !== new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Fortaleza' });
+  const dayLabel   = isTomorrow ? next.dayName + ' ' + next.dateDisp : 'Hoje';
+
+  if (el('next-tide-icon')) {
+    el('next-tide-icon').textContent = isHigh ? '↑' : '↓';
+    el('next-tide-icon').style.color = isHigh ? '#9FE1CB' : '#85b7eb';
+  }
+  if (el('next-tide-type'))  el('next-tide-type').textContent  = next.label;
+  if (el('next-tide-time'))  el('next-tide-time').textContent  = next.time + ' · ' + dayLabel;
+  if (el('next-tide-level')) el('next-tide-level').textContent = next.level + 'm';
+}
+
+// ── Day tabs ──────────────────────────────────
+
+function renderDayTabs() {
+  const container = document.getElementById('day-tabs');
+  if (!container || !_allTideEvents.length) return;
+
+  // Pega dias únicos
+  const seen = new Set();
+  const days = [];
+  _allTideEvents.forEach(e => {
+    if (!seen.has(e.dateKey)) { seen.add(e.dateKey); days.push(e); }
+  });
+
+  const todayKey = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Fortaleza' });
+  if (!_selectedDay) _selectedDay = todayKey;
+
+  container.innerHTML = days.map(e => {
+    const isToday  = e.dateKey === todayKey;
+    const isActive = e.dateKey === _selectedDay;
+    // Conta high/low para o mini-indicador
+    const evs = _allTideEvents.filter(ev => ev.dateKey === e.dateKey);
+    const highs = evs.filter(ev => ev.type === 'high').length;
+    return `<div class="day-tab ${isActive ? 'active' : ''} ${isToday ? 'today' : ''}"
+                 onclick="selectDay('${e.dateKey}')">
+      <div class="day-tab-name">${isToday ? 'Hoje' : e.dayName}</div>
+      <div class="day-tab-date">${e.dateDisp}</div>
+      <div class="day-tab-dot" style="background:${highs >= 2 ? 'var(--teal)' : 'var(--amber)'}"></div>
+    </div>`;
+  }).join('');
+}
+
+function selectDay(dateKey) {
+  _selectedDay = dateKey;
+  renderDayTabs();
+  renderTideEventsForDay(dateKey);
+}
+
+// ── Eventos do dia selecionado ─────────────────
+
+function renderTideEventsForDay(dateKey) {
+  const el = document.getElementById('tide-events');
+  if (!el) return;
+
+  const todayKey = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Fortaleza' });
+  const evs = _allTideEvents.filter(e => e.dateKey === dateKey);
+  if (!evs.length) { el.innerHTML = '<div class="empty-schools">Sem dados para este dia.</div>'; return; }
+
+  const nowLocalStr = new Date().toLocaleString('sv-SE', { timeZone: 'America/Fortaleza' }).replace(' ', 'T');
+
+  el.innerHTML = evs.map(e => {
+    const eventStr = e.dateKey + 'T' + e.time + ':00';
+    const isPast   = dateKey === todayKey && eventStr < nowLocalStr;
+    const isNext   = dateKey === todayKey && !isPast &&
+                     !evs.some(ev => (ev.dateKey + 'T' + ev.time + ':00') < eventStr &&
+                                     (ev.dateKey + 'T' + ev.time + ':00') >= nowLocalStr);
+    const isHigh   = e.type === 'high';
+    const badge    = isHigh
+      ? `<span class="event-badge badge-high">Cheia</span>`
+      : `<span class="event-badge badge-low">Seca</span>`;
+    const nextBadge = isNext ? `<span class="event-badge badge-now">Próxima</span>` : badge;
+    const pastStyle = isPast ? 'opacity:0.45' : '';
+
+    return `<div class="event-row" style="${pastStyle}">
+      <div class="event-time${isNext ? ' now' : ''}">${e.time}</div>
+      <div class="event-info">
+        <div class="event-label">${e.label}</div>
+        <div class="event-height">${e.level} m · ${isHigh ? 'máxima' : 'mínima'}</div>
+      </div>
+      ${nextBadge}
+    </div>`;
+  }).join('');
+}
+
+// Override da função antiga
+function renderTideEvents() {
+  const todayKey = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Fortaleza' });
+  renderTideEventsForDay(_selectedDay ?? todayKey);
+}
+
+
   const events = [];
   const todayStr = new Date().toISOString().substring(0, 10);
 
@@ -345,6 +492,16 @@ function applyData(data, spot) {
 
   if (data?.forecast?.length) renderForecast(data.forecast);
   renderTideTip(wind, spot);
+
+  // Reconstrói eventos de 7 dias quando dados mudam
+  if (_currentTideData) {
+    _allTideEvents = extractAllTideEvents(_currentTideData);
+    renderNextTide();
+    renderDayTabs();
+    const todayKey = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Fortaleza' });
+    _selectedDay = todayKey;
+    renderTideEventsForDay(todayKey);
+  }
 }
 
 // ── Render functions ───────────────────────────
@@ -564,6 +721,8 @@ function navigate(screen) {
   if (screen === 'tide') {
     renderTideChart();
     renderTideEvents();
+    renderNextTide();
+    renderDayTabs();
     const cached = weatherCache[currentSpot.id];
     renderTideTip(cached?.wind ?? 10, currentSpot);
   }
