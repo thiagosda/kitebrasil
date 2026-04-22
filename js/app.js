@@ -350,13 +350,13 @@ function renderTideTip(windKnots, spot) {
   const level = parseFloat(t.level);
   const rising = t.status === 'Enchendo';
 
-  // Sem vento suficiente: não dá pra kitar
+  // Sem vento suficiente: não dá pra velejar
   if (windKnots < 10) {
     if (boxEl) { boxEl.style.background = 'var(--amber-pale)'; boxEl.style.borderLeft = '3px solid var(--amber)'; }
     titleEl.style.color = 'var(--amber-dark)';
     textEl.style.color  = 'var(--amber-dark)';
     titleEl.textContent = 'Sem condições para kitesurf';
-    textEl.textContent  = `Vento de ${windKnots} nós é insuficiente para kitar (mínimo ~12 nós). Aproveite para relaxar ou visitar as lagoas.`;
+    textEl.textContent  = `Vento de ${windKnots} nós é insuficiente para velejar (mínimo ~12 nós). Aproveite para relaxar ou visitar as lagoas.`;
     return;
   }
 
