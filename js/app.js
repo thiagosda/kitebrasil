@@ -75,16 +75,16 @@ async function fetchTideData(spot) {
   try {
     const res  = await fetch(url);
     const data = await res.json();
-    const raw  = data.hourly.sea_level_height_msl;
+    const raw   = data.hourly.sea_level_height_msl;
     const times = data.hourly.time;
 
-    // Normaliza: shift para que o mínimo do dia seja ~0.3m (realidade do Ceará)
-    const todayStr = new Date().toISOString().substring(0, 10);
-    const todayVals = raw.filter((_, i) => times[i].startsWith(todayStr));
-    const minVal = Math.min(...todayVals);
-    const offset = 0.3 - minVal; // shift para mínimo real ~0.3m
+    // Normaliza APENAS os valores (shift vertical) para que o mínimo real fique ~0.3m
+    // NÃO altera os índices de tempo — os horários da API já estão em UTC-3 (Fortaleza)
+    const minVal = Math.min(...raw);
+    const offset = 0.3 - minVal;
+    const levels = raw.map(v => +(v + offset).toFixed(2));
 
-    const result = { times, levels: raw.map(v => +(v + offset).toFixed(2)) };
+    const result = { times, levels };
     tideCache[key] = result;
     return result;
   } catch (e) {
@@ -95,15 +95,25 @@ async function fetchTideData(spot) {
 
 function getTideLevelAt(tideData, h) {
   if (!tideData) return tideH_fallback(h);
-  const hour = Math.floor(h);
-  const frac = h - hour;
-  const todayStr = new Date().toISOString().substring(0, 10);
-  const idx = tideData.times.findIndex(t => t === `${todayStr}T${pad(hour)}:00`);
+  // Usa hora local de Fortaleza (UTC-3) para buscar o índice correto
+  const now     = new Date();
+  const localH  = Math.floor(h);
+  const localM  = Math.round((h - localH) * 60);
+  const dateStr = now.toLocaleDateString('sv-SE', { timeZone: 'America/Fortaleza' });
+  const timeStr = `${dateStr}T${pad(localH)}:00`;
+  const idx = tideData.times.indexOf(timeStr);
   if (idx < 0) return tideH_fallback(h);
-  // Interpolação linear entre horas
   const curr = tideData.levels[idx];
   const next  = tideData.levels[idx + 1] ?? curr;
-  return +(curr + (next - curr) * frac).toFixed(2);
+  return +(curr + (next - curr) * (localM / 60)).toFixed(2);
+}
+
+function nowLocalH() {
+  // Hora local em Fortaleza (UTC-3) como número fracionário
+  const now = new Date();
+  const localStr = now.toLocaleTimeString('sv-SE', { timeZone: 'America/Fortaleza', hour12: false });
+  const [hh, mm, ss] = localStr.split(':').map(Number);
+  return hh + mm / 60 + ss / 3600;
 }
 
 // Fallback matemático caso a API falhe
@@ -123,11 +133,12 @@ function tideH(h, offsetMin = 0) {
 }
 
 function tideStatus(spot) {
-  const h   = nowH();
+  const h   = nowLocalH();
   const cur = tideH(h, spot.tideOffset);
   const prv = tideH(h - 0.25, spot.tideOffset);
+  const todayDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Fortaleza' });
   const todayVals = _currentTideData
-    ? _currentTideData.levels.filter((_, i) => _currentTideData.times[i].startsWith(new Date().toISOString().substring(0, 10)))
+    ? _currentTideData.levels.filter((_, i) => _currentTideData.times[i].startsWith(todayDate))
     : [0.3, 2.7];
   const minV = Math.min(...todayVals);
   const maxV = Math.max(...todayVals);
