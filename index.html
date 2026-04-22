@@ -163,6 +163,10 @@
   <!-- ── Tela: Maré ── -->
   <div class="screen" id="screen-tide">
     <div class="header">
+      <div class="status-bar">
+        <span class="clock">9:41</span>
+        <span>Ceará, BR</span>
+      </div>
       <div class="hero">
         <div class="back-btn" onclick="navigate('kitesurf')">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -170,7 +174,7 @@
           </svg>
           Kitesurf
         </div>
-        <div class="hero-title">Maré hoje</div>
+        <div class="hero-title">Marés</div>
         <div class="hero-date" id="tide-date"></div>
         <div class="status-pill">
           <div class="pill-dot" id="tide-dot"></div>
@@ -178,9 +182,7 @@
           <span class="pill-level" id="tide-pill-level">—</span>
         </div>
         <div class="level-bar-wrap">
-          <div class="level-bar-bg">
-            <div class="level-bar-fill" id="tide-bar" style="width:0%"></div>
-          </div>
+          <div class="level-bar-bg"><div class="level-bar-fill" id="tide-bar" style="width:0%"></div></div>
           <div class="level-labels">
             <span class="level-label">Seca (~0.4m)</span>
             <span class="level-label">Cheia (~2.7m)</span>
@@ -190,16 +192,40 @@
     </div>
 
     <div class="content">
+
+      <!-- Próxima maré -->
       <div class="section">
-        <div class="section-title">GRÁFICO DO DIA</div>
-        <div style="position:relative;height:130px;width:100%">
+        <div class="next-tide-card" id="next-tide-card">
+          <div class="next-tide-icon" id="next-tide-icon">↑</div>
+          <div class="next-tide-body">
+            <div class="next-tide-label">Próxima maré</div>
+            <div class="next-tide-type"  id="next-tide-type">—</div>
+            <div class="next-tide-time"  id="next-tide-time">—</div>
+          </div>
+          <div class="next-tide-level" id="next-tide-level">—</div>
+        </div>
+      </div>
+
+      <!-- Gráfico de hoje -->
+      <div class="section">
+        <div class="section-title">GRÁFICO DE HOJE</div>
+        <div style="position:relative;height:120px;width:100%">
           <canvas id="tideChart"></canvas>
         </div>
       </div>
+
+      <!-- Seletor de dia -->
       <div class="section">
-        <div class="section-title">HORÁRIOS DE HOJE</div>
+        <div class="section-title">TÁBUA DE MARÉS — 7 DIAS</div>
+        <div class="day-tabs" id="day-tabs"></div>
+      </div>
+
+      <!-- Lista de marés do dia selecionado -->
+      <div class="section">
         <div class="tide-events" id="tide-events"></div>
       </div>
+
+      <!-- Dica -->
       <div class="section">
         <div class="section-title">DICA PARA HOJE</div>
         <div class="kite-tip" id="tide-tip-box">
@@ -214,6 +240,7 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
