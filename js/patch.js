@@ -562,8 +562,8 @@ function showIOSBanner() {
 // Tamanho recomendado no Canva: 800x200px
 
 const BANNER_IMAGES = [
-  'images/banner1.jpg',
-  'images/banner2.jpg',
+  'imagens/banner1.jpg',
+  'imagens/banner2.jpg',
 ];
 
 const _origRenderLocationBanners = window.renderLocationBanners;
