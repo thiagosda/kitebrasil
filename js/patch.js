@@ -605,35 +605,37 @@ window.renderLocationBanners = function() {
     `<span class="dot ${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></span>`
   ).join('');
 
-  // Swipe — aplicado no carrossel inteiro
+  // Swipe com pointer events (funciona em touch e mouse)
   const carousel = track.closest('.banner-carousel') || track.parentElement;
-  if (carousel) {
+  if (carousel && banners.length > 1) {
     carousel.querySelectorAll('.banner-arrow').forEach(el => el.remove());
 
-    let _tx = 0, _ty = 0, _moved = false;
+    let _px = 0, _isDragging = false, _hasMoved = false;
 
-    carousel.addEventListener('touchstart', e => {
-      _tx     = e.touches[0].clientX;
-      _ty     = e.touches[0].clientY;
-      _moved  = false;
-    }, { passive: true });
+    carousel.style.userSelect = 'none';
 
-    carousel.addEventListener('touchmove', e => {
-      const dx = Math.abs(e.touches[0].clientX - _tx);
-      const dy = Math.abs(e.touches[0].clientY - _ty);
-      if (dx > dy && dx > 10) _moved = true;
-    }, { passive: true });
+    carousel.addEventListener('pointerdown', e => {
+      _px = e.clientX;
+      _isDragging = true;
+      _hasMoved = false;
+      carousel.setPointerCapture(e.pointerId);
+    });
 
-    carousel.addEventListener('touchend', e => {
-      if (!_moved) return; // foi toque, não arraste
-      const dx = e.changedTouches[0].clientX - _tx;
-      if (Math.abs(dx) > 40) {
-        dx < 0
-          ? goToBanner(_bannerIdx + 1)
-          : goToBanner(_bannerIdx - 1);
+    carousel.addEventListener('pointermove', e => {
+      if (!_isDragging) return;
+      if (Math.abs(e.clientX - _px) > 8) _hasMoved = true;
+    });
+
+    carousel.addEventListener('pointerup', e => {
+      if (!_isDragging) return;
+      _isDragging = false;
+      const dx = e.clientX - _px;
+      if (_hasMoved && Math.abs(dx) > 40) {
+        dx < 0 ? goToBanner(_bannerIdx + 1) : goToBanner(_bannerIdx - 1);
       }
-      _moved = false;
-    }, { passive: true });
+    });
+
+    carousel.addEventListener('pointercancel', () => { _isDragging = false; });
   }
 
   track.style.transform = 'translateX(0)';
