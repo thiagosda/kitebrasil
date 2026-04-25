@@ -2,7 +2,14 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+
+  <!-- Security headers -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://api.open-meteo.com https://marine-api.open-meteo.com; img-src 'self' data:; frame-ancestors 'none'; form-action 'self';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="robots" content="index, follow">
+
   <title>KiteInforma — Condições de Kitesurf no Ceará</title>
 
   <!-- SEO -->
@@ -24,14 +31,6 @@
 
   <link rel="stylesheet" href="css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-  
-  <!-- Vercel Web Analytics -->
-  <script>
-    window.va = window.va || function () { 
-      (window.vaq = window.vaq || []).push(arguments); 
-    };
-  </script>
-  <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 <div class="app">
@@ -45,6 +44,16 @@
             <div class="hero-location">CEARÁ · BRASIL</div>
             <div class="hero-title">KiteInforma</div>
             <div class="hero-date" id="hero-date"></div>
+          </div>
+          <div class="header-actions">
+            <button class="lang-toggle" id="lang-toggle" onclick="toggleLang()" aria-label="Idioma">PT</button>
+            <button class="bell-btn" onclick="navigate('alerts')" aria-label="Alertas">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2a7 7 0 00-7 7v3.5a3 3 0 01-.5 1.7L3 16h18l-1.5-1.8a3 3 0 01-.5-1.7V9a7 7 0 00-7-7z" stroke="#85b7eb" stroke-width="1.5" fill="none"/>
+                <path d="M9 18a3 3 0 006 0" stroke="#85b7eb" stroke-width="1.5"/>
+              </svg>
+              <span class="bell-badge" id="bell-badge" style="display:none">0</span>
+            </button>
           </div>
         </div>
         <div class="spot-selector-wrap">
@@ -245,6 +254,126 @@
           <div>
             <div class="tip-title" id="tide-tip-title">Carregando...</div>
             <div class="tip-text"  id="tide-tip-text"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Tela: Alertas ── -->
+  <div class="screen" id="screen-alerts">
+    <div class="header">
+      <div class="hero">
+        <div class="back-btn" onclick="navigate('kitesurf')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M9 2L4 7l5 5" stroke="#85b7eb" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span data-i18n="back">Voltar</span>
+        </div>
+        <div class="hero-title" data-i18n="alerts_title">Meus Alertas</div>
+        <div class="hero-date" data-i18n="alerts_subtitle">Receba avisos quando as condições forem ideais</div>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- Lista de alertas ativos -->
+      <div class="section">
+        <div class="section-title-row">
+          <div class="section-title" data-i18n="active_alerts">ALERTAS ATIVOS</div>
+          <button class="add-alert-btn" onclick="openAlertForm()" aria-label="Novo alerta">+</button>
+        </div>
+        <div id="alerts-list">
+          <div class="empty-alerts" data-i18n="no_alerts">
+            Você ainda não tem alertas. Toque em + para criar o primeiro.
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulário de novo alerta -->
+      <div class="section" id="alert-form" style="display:none">
+        <div class="section-title" data-i18n="new_alert">NOVO ALERTA</div>
+        <div class="alert-form-box">
+
+          <label class="form-label" data-i18n="alert_spot">Praia</label>
+          <select id="alert-spot" class="form-select"></select>
+
+          <label class="form-label" data-i18n="alert_condition">Condição</label>
+          <div class="alert-conditions">
+            <label class="condition-card">
+              <input type="radio" name="alert-cond" value="wind-good" checked>
+              <div class="cc-content">
+                <div class="cc-icon">🪁</div>
+                <div class="cc-body">
+                  <div class="cc-title" data-i18n="cond_wind_good">Vento bom para velejar</div>
+                  <div class="cc-sub" data-i18n="cond_wind_good_sub">Acima de 14 nós</div>
+                </div>
+              </div>
+            </label>
+            <label class="condition-card">
+              <input type="radio" name="alert-cond" value="wind-strong">
+              <div class="cc-content">
+                <div class="cc-icon">💨</div>
+                <div class="cc-body">
+                  <div class="cc-title" data-i18n="cond_wind_strong">Vento forte</div>
+                  <div class="cc-sub" data-i18n="cond_wind_strong_sub">Acima de 20 nós</div>
+                </div>
+              </div>
+            </label>
+            <label class="condition-card">
+              <input type="radio" name="alert-cond" value="tide-high">
+              <div class="cc-content">
+                <div class="cc-icon">🌊</div>
+                <div class="cc-body">
+                  <div class="cc-title" data-i18n="cond_tide_high">Maré alta</div>
+                  <div class="cc-sub" data-i18n="cond_tide_high_sub">Quando a maré subir acima de 2.5m</div>
+                </div>
+              </div>
+            </label>
+            <label class="condition-card">
+              <input type="radio" name="alert-cond" value="tide-low">
+              <div class="cc-content">
+                <div class="cc-icon">🏖️</div>
+                <div class="cc-body">
+                  <div class="cc-title" data-i18n="cond_tide_low">Maré baixa</div>
+                  <div class="cc-sub" data-i18n="cond_tide_low_sub">Quando a maré baixar abaixo de 0.6m</div>
+                </div>
+              </div>
+            </label>
+            <label class="condition-card">
+              <input type="radio" name="alert-cond" value="score-high">
+              <div class="cc-content">
+                <div class="cc-icon">⭐</div>
+                <div class="cc-body">
+                  <div class="cc-title" data-i18n="cond_score_high">Dia excelente</div>
+                  <div class="cc-sub" data-i18n="cond_score_high_sub">Score do dia 8 ou mais</div>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-secondary" onclick="closeAlertForm()" data-i18n="cancel">Cancelar</button>
+            <button class="btn-primary" onclick="saveAlert()" data-i18n="save_alert">Salvar Alerta</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Como funciona -->
+      <div class="section">
+        <div class="section-title" data-i18n="how_works">COMO FUNCIONA</div>
+        <div class="info-card">
+          <div class="info-row">
+            <div class="info-num">1</div>
+            <div class="info-text" data-i18n="how_step1">Crie um alerta escolhendo a praia e a condição que você quer monitorar.</div>
+          </div>
+          <div class="info-row">
+            <div class="info-num">2</div>
+            <div class="info-text" data-i18n="how_step2">Quando você abrir o app e a condição for atingida, um aviso aparece destacado.</div>
+          </div>
+          <div class="info-row">
+            <div class="info-num">3</div>
+            <div class="info-text" data-i18n="how_step3">Você pode criar quantos alertas quiser e remover a qualquer momento.</div>
           </div>
         </div>
       </div>
