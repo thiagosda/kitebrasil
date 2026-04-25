@@ -487,7 +487,11 @@ function initPWABanner() {
 
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
   if (isIOS && !window.navigator.standalone) {
-    setTimeout(showIOSBanner, 3000);
+    // Só mostra se ainda não instalou e não dispensou nesta sessão
+    if (!sessionStorage.getItem('pwa_ios_shown')) {
+      sessionStorage.setItem('pwa_ios_shown', '1');
+      setTimeout(showIOSBanner, 4000);
+    }
   }
 }
 
@@ -509,11 +513,47 @@ function showPWABanner() {
 
 function showIOSBanner() {
   const banner = document.getElementById('pwa-banner');
-  const btn    = document.getElementById('pwa-install-btn');
-  const sub    = document.getElementById('pwa-sub');
   if (!banner) return;
-  if (sub) sub.textContent = 'Toque em "Compartilhar" depois "Adicionar à tela de início"';
-  if (btn) { btn.textContent = 'Entendi'; btn.onclick = closePWABanner; }
+
+  // Substitui conteúdo por instrução visual completa
+  banner.innerHTML = `
+    <div class="pwa-ios-guide">
+      <div class="pwa-ios-header">
+        <div class="pwa-ios-title">Instale o KiteInforma</div>
+        <button class="pwa-close-btn" onclick="closePWABanner()" aria-label="Fechar">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="pwa-ios-sub">Para receber alertas com o app fechado, adicione à tela inicial:</div>
+      <div class="pwa-ios-steps">
+        <div class="pwa-ios-step">
+          <div class="pwa-ios-num">1</div>
+          <div class="pwa-ios-text">
+            Toque em
+            <span class="pwa-ios-icon-inline">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                <polyline points="16 6 12 2 8 6"/>
+                <line x1="12" y1="2" x2="12" y2="15"/>
+              </svg>
+            </span>
+            <strong>Compartilhar</strong> na barra do Safari
+          </div>
+        </div>
+        <div class="pwa-ios-step">
+          <div class="pwa-ios-num">2</div>
+          <div class="pwa-ios-text">Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong></div>
+        </div>
+        <div class="pwa-ios-step">
+          <div class="pwa-ios-num">3</div>
+          <div class="pwa-ios-text">Toque em <strong>Adicionar</strong> no canto superior direito</div>
+        </div>
+      </div>
+      <button class="pwa-ios-dismiss" onclick="closePWABanner()">Entendi</button>
+    </div>`;
+
   banner.style.display = 'block';
 }
 
