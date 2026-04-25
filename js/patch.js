@@ -445,9 +445,80 @@ window.conditionLabel = function(cond) {
 };
 document.addEventListener('DOMContentLoaded', async () => {
   await PUSH.init();
+
+  // Hook navigate
   const _origNav = window.navigate;
   window.navigate = function(screen) {
     _origNav(screen);
     if (screen === 'alerts') setTimeout(renderNotifButton, 60);
   };
+
+  // Sincroniza alertas com SW ao salvar
+  const _origSaveAlerts = window.saveAlerts;
+  if (_origSaveAlerts) {
+    window.saveAlerts = function(alerts) {
+      _origSaveAlerts(alerts);
+      syncAlertsToSW(alerts);
+    };
+  }
+  if (typeof getAlerts === 'function') syncAlertsToSW(getAlerts());
+
+  initPWABanner();
 });
+
+// ── Sync alertas para Service Worker ────────────
+function syncAlertsToSW(alerts) {
+  if (!navigator.serviceWorker?.controller) return;
+  navigator.serviceWorker.controller.postMessage({ type: 'SYNC_ALERTS', alerts });
+}
+
+// ── PWA Install Banner ───────────────────────────
+let _deferredPrompt = null;
+
+function initPWABanner() {
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  if (localStorage.getItem('pwa_dismissed')) return;
+
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    _deferredPrompt = e;
+    showPWABanner();
+  });
+
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (isIOS && !window.navigator.standalone) {
+    setTimeout(showIOSBanner, 3000);
+  }
+}
+
+function showPWABanner() {
+  const banner = document.getElementById('pwa-banner');
+  if (!banner) return;
+  banner.style.display = 'block';
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) {
+    btn.onclick = async () => {
+      if (!_deferredPrompt) return;
+      _deferredPrompt.prompt();
+      await _deferredPrompt.userChoice;
+      _deferredPrompt = null;
+      closePWABanner();
+    };
+  }
+}
+
+function showIOSBanner() {
+  const banner = document.getElementById('pwa-banner');
+  const btn    = document.getElementById('pwa-install-btn');
+  const sub    = document.getElementById('pwa-sub');
+  if (!banner) return;
+  if (sub) sub.textContent = 'Toque em "Compartilhar" depois "Adicionar à tela de início"';
+  if (btn) { btn.textContent = 'Entendi'; btn.onclick = closePWABanner; }
+  banner.style.display = 'block';
+}
+
+window.closePWABanner = function() {
+  const b = document.getElementById('pwa-banner');
+  if (b) b.style.display = 'none';
+  localStorage.setItem('pwa_dismissed', '1');
+};
