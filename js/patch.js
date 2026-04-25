@@ -564,39 +564,32 @@ window.startBannerTimer = function() {
   if (window._swipeAttached) return;
   window._swipeAttached = true;
 
-  let _x0 = 0, _y0 = 0, _inBanner = false;
+  // Aguarda o DOM estar pronto
+  setTimeout(() => {
+    const carousel = document.querySelector('.banner-carousel');
+    if (!carousel) return;
 
-  document.addEventListener('touchstart', e => {
-    const track = document.getElementById('banner-track');
-    if (!track) return;
-    const rect = track.getBoundingClientRect();
-    const t = e.touches[0];
-    _inBanner = t.clientX >= rect.left && t.clientX <= rect.right &&
-                t.clientY >= rect.top  && t.clientY <= rect.bottom;
-    if (!_inBanner) return;
-    _x0 = t.clientX;
-    _y0 = t.clientY;
-  }, { passive: true });
+    let x0 = 0, y0 = 0;
 
-  document.addEventListener('touchend', e => {
-    if (!_inBanner) return;
-    _inBanner = false;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - _x0;
-    const dy = t.clientY - _y0;
-    if (Math.abs(dx) < 35 || Math.abs(dx) < Math.abs(dy)) return;
+    carousel.addEventListener('touchstart', e => {
+      x0 = e.touches[0].clientX;
+      y0 = e.touches[0].clientY;
+    }, { passive: true });
 
-    const track = document.getElementById('banner-track');
-    if (!track) return;
-    const total = track.children.length;
-    // Índice atual pelos dots
-    const dots = document.querySelectorAll('#banner-dots .dot');
-    let current = 0;
-    dots.forEach((d, i) => { if (d.classList.contains('active')) current = i; });
+    carousel.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - x0;
+      const dy = e.changedTouches[0].clientY - y0;
+      if (Math.abs(dx) < 30 || Math.abs(dx) < Math.abs(dy)) return;
 
-    if (dx < 0) goToBanner((current + 1) % total);
-    else         goToBanner((current - 1 + total) % total);
-  }, { passive: true });
+      const dots = document.querySelectorAll('#banner-dots .dot');
+      let current = 0;
+      dots.forEach((d, i) => { if (d.classList.contains('active')) current = i; });
+      const total = document.querySelectorAll('#banner-track .banner-slide').length;
+
+      if (dx < 0) goToBanner((current + 1) % total);
+      else         goToBanner((current - 1 + total) % total);
+    }, { passive: true });
+  }, 300);
 };
 const BANNER_IMAGES = [
   'imagens/banner1.jpg',
