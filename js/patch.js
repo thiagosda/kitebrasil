@@ -580,19 +580,24 @@ window.renderLocationBanners = function() {
   track.innerHTML = banners.map((b, i) => {
     const img = BANNER_IMAGES[i % BANNER_IMAGES.length];
     const hasImg = img && i < BANNER_IMAGES.length;
-    const bgStyle = hasImg
-      ? `background:${esc(b.gradient)};background-image:url(${img});background-size:cover;background-position:center;background-repeat:no-repeat;`
-      : `background:${esc(b.gradient)};`;
+
+    if (hasImg) {
+      // Banner com imagem — só a imagem, sem texto por cima
+      return `<div class="banner-slide" onclick="window.open('${safeUrl(b.url)}','_blank','noopener,noreferrer')" style="cursor:pointer">
+        <div style="width:100%;height:120px;background-image:url(${img});background-size:cover;background-position:center;background-repeat:no-repeat;border-radius:14px;"></div>
+      </div>`;
+    }
+
+    // Banner sem imagem — layout original com texto
     return `<div class="banner-slide" onclick="window.open('${safeUrl(b.url)}','_blank','noopener,noreferrer')">
-      <div class="banner-slide-inner" style="position:relative;${bgStyle}">
-        ${hasImg ? '<div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(7,22,36,0.75),rgba(7,22,36,0.45));border-radius:inherit"></div>' : ''}
-        <div class="bs-icon" style="background:${esc(b.iconBg)};color:${esc(b.iconColor)};position:relative;z-index:1">${esc(b.icon)}</div>
-        <div class="bs-body" style="position:relative;z-index:1">
+      <div class="banner-slide-inner" style="background:${esc(b.gradient)}">
+        <div class="bs-icon" style="background:${esc(b.iconBg)};color:${esc(b.iconColor)}">${esc(b.icon)}</div>
+        <div class="bs-body">
           <div class="bs-tag">${esc(b.tag)}</div>
           <div class="bs-title">${esc(b.title)}</div>
           <div class="bs-sub">${esc(b.sub)}</div>
         </div>
-        <div class="bs-arrow" style="position:relative;z-index:1">›</div>
+        <div class="bs-arrow">›</div>
       </div>
     </div>`;
   }).join('');
