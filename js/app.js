@@ -350,13 +350,13 @@ function renderTideTip(windKnots, spot) {
   const level = parseFloat(t.level);
   const rising = t.status === 'Enchendo';
 
-  // Sem vento suficiente: não dá pra velejar
+  // Sem vento suficiente: não dá pra kitar
   if (windKnots < 10) {
     if (boxEl) { boxEl.style.background = 'var(--amber-pale)'; boxEl.style.borderLeft = '3px solid var(--amber)'; }
     titleEl.style.color = 'var(--amber-dark)';
     textEl.style.color  = 'var(--amber-dark)';
     titleEl.textContent = 'Sem condições para kitesurf';
-    textEl.textContent  = `Vento de ${windKnots} nós é insuficiente para velejar (mínimo ~12 nós). Aproveite para relaxar ou visitar as lagoas.`;
+    textEl.textContent  = `Vento de ${windKnots} nós é insuficiente para kitar (mínimo ~12 nós). Aproveite para relaxar ou visitar as lagoas.`;
     return;
   }
 
@@ -590,18 +590,18 @@ function openSchool(spotId, schoolId) {
   $('school-badge').textContent       = s.open ? 'Aberta agora' : (s.openTime ?? 'Fechada');
 
   $('school-phone-btn').onclick    = () => window.location.href = `tel:${s.phone}`;
-  $('school-whatsapp-btn').onclick = () => window.open(s.whatsapp, '_blank');
+  $('school-whatsapp-btn').onclick = () => window.open(s.whatsapp, '_blank', 'noopener,noreferrer');
 
   const siteBtn = $('school-site-btn');
   if (s.site) {
     siteBtn.classList.remove('disabled');
-    siteBtn.onclick = () => window.open(s.site, '_blank');
+    siteBtn.onclick = () => window.open(s.site, '_blank', 'noopener,noreferrer');
   } else {
     siteBtn.classList.add('disabled');
     siteBtn.onclick = null;
   }
 
-  $('school-map-link').onclick = () => window.open(s.mapsUrl, '_blank');
+  $('school-map-link').onclick = () => window.open(s.mapsUrl, '_blank', 'noopener,noreferrer');
 
   $('school-google-rating').innerHTML =
     `<span class="stars">${'★'.repeat(Math.round(s.rating))}</span>
@@ -632,8 +632,8 @@ function navigate(screen) {
   document.querySelectorAll('.screen').forEach(s  => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
-  const screenMap = { kitesurf: 'screen-kitesurf', tide: 'screen-tide', schools: 'screen-schools', school: 'screen-school' };
-  const navMap    = { kitesurf: 'nav-kitesurf',    tide: 'nav-tide',    schools: 'nav-schools',    school: 'nav-schools' };
+  const screenMap = { kitesurf: 'screen-kitesurf', tide: 'screen-tide', schools: 'screen-schools', school: 'screen-school', alerts: 'screen-alerts' };
+  const navMap    = { kitesurf: 'nav-kitesurf',    tide: 'nav-tide',    schools: 'nav-schools',    school: 'nav-schools',    alerts: 'nav-kitesurf' };
 
   const target = document.getElementById(screenMap[screen] ?? 'screen-kitesurf');
   if (target) {
@@ -652,7 +652,9 @@ function navigate(screen) {
     renderTideTip(cached?.wind ?? 10, currentSpot);
   }
   if (screen === 'schools') renderSchools();
+  if (screen === 'alerts') renderAlertsList();
 
+  applyI18n();
   window.scrollTo(0, 0);
 }
 
@@ -675,6 +677,8 @@ async function switchSpot(id) {
   ]);
   _currentTideData = tideData;
   applyData(weatherData, spot);
+  renderLocationBanners();
+  checkAlertsForBadge();
 
   if (document.getElementById('screen-schools').classList.contains('active')) renderSchools();
   if (document.getElementById('screen-tide').classList.contains('active')) { renderTideChart(); renderTideEvents(); }
@@ -703,7 +707,413 @@ function updateClock() {
   document.querySelectorAll('.clock').forEach(el => el.textContent = t);
 }
 
-// ── Init ───────────────────────────────────────
+// ── Sistema de Alertas ─────────────────────────
+// Armazenado localmente no navegador do usuário (sem servidor)
+// Sanitização: spotId validado contra SPOTS, condition validada contra lista fixa
+
+const VALID_CONDITIONS = ['wind-good', 'wind-strong', 'tide-high', 'tide-low', 'score-high'];
+
+function getAlerts() {
+  try {
+    const raw = localStorage.getItem('kiteinforma_alerts');
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    // Sanitiza: aceita apenas alertas com formato esperado
+    return arr.filter(a =>
+      a && typeof a === 'object' &&
+      typeof a.spotId === 'string' &&
+      SPOTS.some(s => s.id === a.spotId) &&
+      VALID_CONDITIONS.includes(a.condition)
+    );
+  } catch { return []; }
+}
+
+function saveAlerts(alerts) {
+  try {
+    localStorage.setItem('kiteinforma_alerts', JSON.stringify(alerts));
+  } catch (e) { console.warn('Não foi possível salvar alertas', e); }
+}
+
+function openAlertForm() {
+  const form = document.getElementById('alert-form');
+  if (!form) return;
+  form.style.display = 'block';
+  // Popula seletor com os spots
+  const sel = document.getElementById('alert-spot');
+  if (sel && !sel.options.length) {
+    const regions = [...new Set(SPOTS.map(s => s.region))];
+    sel.innerHTML = regions.map(r =>
+      `<optgroup label="${r}">${SPOTS.filter(s => s.region === r).map(s =>
+        `<option value="${s.id}"${s.id === currentSpot.id ? ' selected' : ''}>${s.name}</option>`
+      ).join('')}</optgroup>`
+    ).join('');
+  }
+  form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeAlertForm() {
+  const form = document.getElementById('alert-form');
+  if (form) form.style.display = 'none';
+}
+
+function saveAlert() {
+  const spotId = document.getElementById('alert-spot')?.value;
+  const condEl = document.querySelector('input[name="alert-cond"]:checked');
+  if (!spotId || !condEl) return;
+  // Valida contra whitelist (defesa contra manipulação do DOM)
+  if (!SPOTS.some(s => s.id === spotId)) return;
+  if (!VALID_CONDITIONS.includes(condEl.value)) return;
+
+  const alerts = getAlerts();
+  // Evita duplicatas
+  const exists = alerts.find(a => a.spotId === spotId && a.condition === condEl.value);
+  if (!exists) {
+    alerts.push({
+      spotId,
+      condition: condEl.value,
+      createdAt: Date.now()
+    });
+    saveAlerts(alerts);
+  }
+  closeAlertForm();
+  renderAlertsList();
+  checkAlertsForBadge();
+}
+
+function deleteAlert(idx) {
+  const alerts = getAlerts();
+  alerts.splice(idx, 1);
+  saveAlerts(alerts);
+  renderAlertsList();
+  checkAlertsForBadge();
+}
+
+function conditionLabel(cond) {
+  const labels = {
+    'wind-good':   { 'pt': '🪁 Vento bom para velejar',   'en': '🪁 Good wind for kiting' },
+    'wind-strong': { 'pt': '💨 Vento forte (20+ nós)',    'en': '💨 Strong wind (20+ knots)' },
+    'tide-high':   { 'pt': '🌊 Maré alta (acima 2.5m)',  'en': '🌊 High tide (above 2.5m)' },
+    'tide-low':    { 'pt': '🏖️ Maré baixa (abaixo 0.6m)','en': '🏖️ Low tide (below 0.6m)' },
+    'score-high':  { 'pt': '⭐ Dia excelente (score 8+)','en': '⭐ Excellent day (score 8+)' }
+  };
+  return labels[cond]?.[currentLang] ?? cond;
+}
+
+function checkConditionMet(condition, spot) {
+  const w = weatherCache[spot.id];
+  if (!w) return false;
+  const score = calcScore(w.wind, w.gust);
+
+  if (condition === 'wind-good')   return w.wind >= 14;
+  if (condition === 'wind-strong') return w.wind >= 20;
+  if (condition === 'score-high')  return score >= 8;
+
+  // Para maré, precisa de dados desse spot específico
+  if (_currentTideData && spot.id === currentSpot.id) {
+    const lvl = parseFloat(tideStatus(spot).level);
+    if (condition === 'tide-high') return lvl >= 2.5;
+    if (condition === 'tide-low')  return lvl <= 0.6;
+  }
+  return false;
+}
+
+function renderAlertsList() {
+  const list = document.getElementById('alerts-list');
+  if (!list) return;
+  const alerts = getAlerts();
+
+  if (!alerts.length) {
+    list.innerHTML = `<div class="empty-alerts">${i18n('no_alerts')}</div>`;
+    return;
+  }
+
+  list.innerHTML = alerts.map((a, i) => {
+    const spot = SPOTS.find(s => s.id === a.spotId);
+    if (!spot) return '';
+    const met = checkConditionMet(a.condition, spot);
+    return `<div class="alert-card ${met ? 'alert-active' : ''}">
+      <div class="alert-info">
+        <div class="alert-cond">${conditionLabel(a.condition)}</div>
+        <div class="alert-spot">📍 ${spot.name}</div>
+        ${met ? `<div class="alert-status-on">✓ ${i18n('condition_met')}</div>` : `<div class="alert-status-off">${i18n('waiting')}</div>`}
+      </div>
+      <button class="alert-delete" onclick="deleteAlert(${i})" aria-label="Remover">×</button>
+    </div>`;
+  }).join('');
+}
+
+function checkAlertsForBadge() {
+  const alerts = getAlerts();
+  const matched = alerts.filter(a => {
+    const spot = SPOTS.find(s => s.id === a.spotId);
+    return spot && checkConditionMet(a.condition, spot);
+  });
+  const badge = document.getElementById('bell-badge');
+  if (!badge) return;
+  if (matched.length > 0) {
+    badge.textContent = matched.length;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ── Internacionalização (i18n) ─────────────────
+
+let currentLang = (() => {
+  try {
+    const saved = localStorage.getItem('kiteinforma_lang');
+    if (saved === 'pt' || saved === 'en') return saved;
+  } catch {}
+  // Detecta idioma do navegador
+  const nav = (navigator.language || 'pt').toLowerCase();
+  return nav.startsWith('en') ? 'en' : 'pt';
+})();
+
+const TRANSLATIONS = {
+  pt: {
+    back: 'Voltar',
+    alerts_title: 'Meus Alertas',
+    alerts_subtitle: 'Receba avisos quando as condições forem ideais',
+    active_alerts: 'ALERTAS ATIVOS',
+    no_alerts: 'Você ainda não tem alertas. Toque em + para criar o primeiro.',
+    new_alert: 'NOVO ALERTA',
+    alert_spot: 'Praia',
+    alert_condition: 'Condição',
+    cond_wind_good: 'Vento bom para velejar',
+    cond_wind_good_sub: 'Acima de 14 nós',
+    cond_wind_strong: 'Vento forte',
+    cond_wind_strong_sub: 'Acima de 20 nós',
+    cond_tide_high: 'Maré alta',
+    cond_tide_high_sub: 'Quando a maré subir acima de 2.5m',
+    cond_tide_low: 'Maré baixa',
+    cond_tide_low_sub: 'Quando a maré baixar abaixo de 0.6m',
+    cond_score_high: 'Dia excelente',
+    cond_score_high_sub: 'Score do dia 8 ou mais',
+    cancel: 'Cancelar',
+    save_alert: 'Salvar Alerta',
+    how_works: 'COMO FUNCIONA',
+    how_step1: 'Crie um alerta escolhendo a praia e a condição que você quer monitorar.',
+    how_step2: 'Quando você abrir o app e a condição for atingida, um aviso aparece destacado.',
+    how_step3: 'Você pode criar quantos alertas quiser e remover a qualquer momento.',
+    condition_met: 'Condição atingida agora!',
+    waiting: 'Aguardando condição',
+    score_label: 'SCORE DO DIA',
+    conditions_now: 'CONDIÇÕES AGORA',
+    forecast_7days: 'PREVISÃO 7 DIAS',
+    sponsored: 'Patrocinado',
+    wind: 'Vento', gusts: 'Rajadas', waves: 'Ondas', tide: 'Maré',
+    knots: 'nós', realtime: 'em tempo real', period: 'período',
+    schools: 'Escolas', kitesurf: 'Kitesurf'
+  },
+  en: {
+    back: 'Back',
+    alerts_title: 'My Alerts',
+    alerts_subtitle: 'Get notified when conditions are ideal',
+    active_alerts: 'ACTIVE ALERTS',
+    no_alerts: 'You have no alerts yet. Tap + to create your first.',
+    new_alert: 'NEW ALERT',
+    alert_spot: 'Beach',
+    alert_condition: 'Condition',
+    cond_wind_good: 'Good wind for kiting',
+    cond_wind_good_sub: 'Above 14 knots',
+    cond_wind_strong: 'Strong wind',
+    cond_wind_strong_sub: 'Above 20 knots',
+    cond_tide_high: 'High tide',
+    cond_tide_high_sub: 'When tide rises above 2.5m',
+    cond_tide_low: 'Low tide',
+    cond_tide_low_sub: 'When tide drops below 0.6m',
+    cond_score_high: 'Excellent day',
+    cond_score_high_sub: 'Daily score 8 or higher',
+    cancel: 'Cancel',
+    save_alert: 'Save Alert',
+    how_works: 'HOW IT WORKS',
+    how_step1: 'Create an alert by picking the beach and condition you want to monitor.',
+    how_step2: 'When you open the app and the condition is met, a highlighted notice appears.',
+    how_step3: 'Create as many alerts as you want and remove anytime.',
+    condition_met: 'Condition met right now!',
+    waiting: 'Waiting for condition',
+    score_label: 'TODAY\'S SCORE',
+    conditions_now: 'CURRENT CONDITIONS',
+    forecast_7days: '7-DAY FORECAST',
+    sponsored: 'Sponsored',
+    wind: 'Wind', gusts: 'Gusts', waves: 'Waves', tide: 'Tide',
+    knots: 'knots', realtime: 'real time', period: 'period',
+    schools: 'Schools', kitesurf: 'Kitesurf'
+  }
+};
+
+function i18n(key) {
+  return TRANSLATIONS[currentLang]?.[key] ?? TRANSLATIONS.pt[key] ?? key;
+}
+
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const txt = i18n(key);
+    if (txt) el.textContent = txt;
+  });
+  document.documentElement.lang = currentLang === 'en' ? 'en' : 'pt-BR';
+  const toggle = document.getElementById('lang-toggle');
+  if (toggle) toggle.textContent = currentLang === 'en' ? 'EN' : 'PT';
+}
+
+function toggleLang() {
+  currentLang = currentLang === 'pt' ? 'en' : 'pt';
+  try { localStorage.setItem('kiteinforma_lang', currentLang); } catch {}
+  applyI18n();
+  // Re-renderiza componentes dinâmicos
+  renderAlertsList();
+  if (_currentTideData) {
+    _allTideEvents = extractAllTideEvents(_currentTideData);
+    renderNextTide();
+    renderDayTabs();
+    renderTideEventsForDay(_selectedDay ?? new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Fortaleza' }));
+  }
+  renderLocationBanners();
+}
+
+// ── Banners por localização ────────────────────
+// Cada spot tem seus próprios banners. Quando o usuário troca de praia,
+// os banners mudam automaticamente.
+
+const SPOT_BANNERS = {
+  prea: [
+    {
+      tag: 'Escola Parceira', title: 'Preá Wind School',
+      sub: 'Aulas particulares · Português, Inglês, Francês',
+      icon: '🎓', gradient: 'linear-gradient(135deg,#0a2a40,#1a3a5c)',
+      iconBg: '#E1F5EE', iconColor: '#0F6E56',
+      url: 'https://wa.me/5588999990001?text=Olá! Vi vocês no KiteInforma'
+    },
+    {
+      tag: 'Agência de Viagens', title: 'Preá Trips',
+      sub: 'Pacotes completos: hotel, transfer e aulas',
+      icon: '✈️', gradient: 'linear-gradient(135deg,#2d1a4a,#4a2e7a)',
+      iconBg: '#EEDEFA', iconColor: '#534AB7',
+      url: 'https://wa.me/5588999990002?text=Olá! Quero saber sobre pacotes'
+    }
+  ],
+  barrinha: [
+    {
+      tag: 'Escola Parceira', title: 'Barrinha Kite Brasil',
+      sub: 'O paraíso escondido do kitesurf · Aulas todos os níveis',
+      icon: '🪁', gradient: 'linear-gradient(135deg,#1a3a2a,#0f4a2a)',
+      iconBg: '#E1F5EE', iconColor: '#0F6E56',
+      url: 'https://wa.me/5512997279682?text=Olá! Vi vocês no KiteInforma'
+    },
+    {
+      tag: 'Agência Local', title: 'Discover Barrinha',
+      sub: 'Tours de buggy, lagoas e dunas · Roteiros exclusivos',
+      icon: '🏜️', gradient: 'linear-gradient(135deg,#3d2a0a,#5a3e1a)',
+      iconBg: '#FAEEDA', iconColor: '#854F0B',
+      url: 'https://wa.me/5588999990010?text=Olá! Quero saber sobre tours'
+    }
+  ],
+  jericoacoara: [
+    {
+      tag: 'Escola Parceira', title: 'Jeri Kite Academy',
+      sub: 'Localização perfeita · Instrutores certificados IKO',
+      icon: '🏄', gradient: 'linear-gradient(135deg,#3a1a0a,#5a2e1a)',
+      iconBg: '#FAECE7', iconColor: '#993C1D',
+      url: 'https://wa.me/5588998035075?text=Olá! Vi vocês no KiteInforma'
+    },
+    {
+      tag: 'Agência de Turismo', title: 'Jericoacoara Adventure',
+      sub: 'Pôr do sol na Duna · Lagoa do Paraíso · Pedra Furada',
+      icon: '🌅', gradient: 'linear-gradient(135deg,#2a1a3a,#4a2e5a)',
+      iconBg: '#EEDEFA', iconColor: '#534AB7',
+      url: 'https://wa.me/5588999990020?text=Olá! Quero conhecer os passeios'
+    }
+  ]
+};
+
+// Banners genéricos para spots sem banners específicos
+const DEFAULT_BANNERS = [
+  {
+    tag: 'Anuncie aqui', title: 'Sua escola em destaque',
+    sub: 'Alcance kitesurfistas que estão olhando esta praia',
+    icon: '⭐', gradient: 'linear-gradient(135deg,#1a3a5c,#0a2a40)',
+    iconBg: '#E6F1FB', iconColor: '#185FA5',
+    url: 'mailto:anuncie@kiteinforma.com.br?subject=Quero anunciar'
+  },
+  {
+    tag: 'Patrocinado', title: 'Transfer Fortaleza → Litoral',
+    sub: 'Saídas diárias · Conforto e pontualidade',
+    icon: '🚐', gradient: 'linear-gradient(135deg,#0a2d1a,#0f4a2a)',
+    iconBg: '#E1F5EE', iconColor: '#1D9E75',
+    url: 'https://wa.me/5588999990099?text=Olá! Vi vocês no KiteInforma'
+  }
+];
+
+let _bannerIdx   = 0;
+let _bannerTimer = null;
+
+function getCurrentBanners() {
+  return SPOT_BANNERS[currentSpot.id] ?? DEFAULT_BANNERS;
+}
+
+function renderLocationBanners() {
+  const track = document.getElementById('banner-track');
+  const dots  = document.getElementById('banner-dots');
+  if (!track || !dots) return;
+
+  const banners = getCurrentBanners();
+
+  // Sanitiza URL: aceita apenas https://, mailto: e wa.me
+  const safeUrl = (url) => {
+    if (typeof url !== 'string') return '#';
+    const trimmed = url.trim();
+    if (trimmed.startsWith('https://') || trimmed.startsWith('mailto:')) return trimmed;
+    return '#';
+  };
+
+  // Escapa HTML para prevenir XSS
+  const esc = (s) => String(s).replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]);
+
+  track.innerHTML = banners.map(b => `
+    <div class="banner-slide" onclick="window.open('${safeUrl(b.url)}','_blank','noopener,noreferrer')">
+      <div class="banner-slide-inner" style="background:${esc(b.gradient)}">
+        <div class="bs-icon" style="background:${esc(b.iconBg)};color:${esc(b.iconColor)}">${esc(b.icon)}</div>
+        <div class="bs-body">
+          <div class="bs-tag">${esc(b.tag)}</div>
+          <div class="bs-title">${esc(b.title)}</div>
+          <div class="bs-sub">${esc(b.sub)}</div>
+        </div>
+        <div class="bs-arrow">›</div>
+      </div>
+    </div>`).join('');
+
+  dots.innerHTML = banners.map((_, i) =>
+    `<span class="dot ${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></span>`
+  ).join('');
+
+  _bannerIdx = 0;
+  track.style.transform = 'translateX(0)';
+  startBannerTimer();
+}
+
+function goToBanner(n) {
+  const banners = getCurrentBanners();
+  _bannerIdx = (n + banners.length) % banners.length;
+  const track = document.getElementById('banner-track');
+  if (track) track.style.transform = `translateX(-${_bannerIdx * 100}%)`;
+  document.querySelectorAll('.dot').forEach((d, i) =>
+    d.classList.toggle('active', i === _bannerIdx)
+  );
+}
+
+function startBannerTimer() {
+  if (_bannerTimer) clearInterval(_bannerTimer);
+  _bannerTimer = setInterval(() => {
+    const banners = getCurrentBanners();
+    if (banners.length > 1) goToBanner(_bannerIdx + 1);
+  }, 5000);
+}
+
+
 
 async function init() {
   updateClock();
@@ -713,6 +1123,7 @@ async function init() {
 
   renderSelectors();
   renderSeasonBanner();
+  applyI18n();
 
   document.getElementById('spot-selector')?.addEventListener('change', e => switchSpot(e.target.value));
   document.getElementById('spot-selector-schools')?.addEventListener('change', e => switchSpot(e.target.value));
@@ -724,6 +1135,8 @@ async function init() {
   ]);
   _currentTideData = tideData;
   applyData(weatherData, currentSpot);
+  renderLocationBanners();
+  checkAlertsForBadge();
 
   tryGPS();
 }
