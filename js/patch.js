@@ -616,7 +616,7 @@ window.renderLocationBanners = function() {
 
     if (hasImg) {
       return `<div class="banner-slide" onclick="window.open('${safeUrl(b.url)}','_blank','noopener,noreferrer')" style="cursor:pointer">
-        <div style="width:100%;height:120px;background-image:url(${img});background-size:cover;background-position:center;background-repeat:no-repeat;border-radius:14px;"></div>
+        <div style="width:100%;background-image:url(${img});background-size:contain;background-position:center;background-repeat:no-repeat;border-radius:14px;aspect-ratio:4/1;"></div>
       </div>`;
     }
 
