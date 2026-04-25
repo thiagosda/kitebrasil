@@ -557,6 +557,57 @@ function showIOSBanner() {
   banner.style.display = 'block';
 }
 
+// ── 16. Banners com imagem de fundo do Canva ─────
+// Coloque suas imagens em: images/banner1.jpg e images/banner2.jpg
+// Tamanho recomendado no Canva: 800x200px
+
+const BANNER_IMAGES = [
+  'images/banner1.jpg',
+  'images/banner2.jpg',
+];
+
+const _origRenderLocationBanners = window.renderLocationBanners;
+window.renderLocationBanners = function() {
+  const track = document.getElementById('banner-track');
+  const dots  = document.getElementById('banner-dots');
+  if (!track || !dots) return;
+
+  const banners = getCurrentBanners();
+
+  const safeUrl = (url) => {
+    if (typeof url !== 'string') return '#';
+    const t = url.trim();
+    if (t.startsWith('https://') || t.startsWith('mailto:')) return t;
+    return '#';
+  };
+  const esc = (s) => String(s).replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]);
+
+  track.innerHTML = banners.map((b, i) => {
+    const img = BANNER_IMAGES[i % BANNER_IMAGES.length];
+    return `
+    <div class="banner-slide" onclick="window.open('${safeUrl(b.url)}','_blank','noopener,noreferrer')">
+      <div class="banner-slide-inner banner-with-image" style="background-image:url('${img}');background:${esc(b.gradient)}">
+        <div class="banner-img-overlay"></div>
+        <div class="bs-icon" style="background:${esc(b.iconBg)};color:${esc(b.iconColor)}">${esc(b.icon)}</div>
+        <div class="bs-body">
+          <div class="bs-tag">${esc(b.tag)}</div>
+          <div class="bs-title">${esc(b.title)}</div>
+          <div class="bs-sub">${esc(b.sub)}</div>
+        </div>
+        <div class="bs-arrow">›</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  dots.innerHTML = banners.map((_, i) =>
+    `<span class="dot ${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></span>`
+  ).join('');
+
+  track.style.transform = 'translateX(0)';
+  startBannerTimer();
+};
+
 window.closePWABanner = function() {
   const b = document.getElementById('pwa-banner');
   if (b) b.style.display = 'none';
