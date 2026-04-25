@@ -432,7 +432,17 @@ window.enableNotifications = async function() {
   if (granted) PUSH.send('KiteInforma', i18n('notif_test'));
 };
 
-// ── 14. Init ─────────────────────────────────────
+// ── 15. conditionLabel sem emojis ────────────────
+window.conditionLabel = function(cond) {
+  const labels = {
+    'wind-good':   { pt: i18n('cond_wind_good'),   en: i18n('cond_wind_good') },
+    'wind-strong': { pt: i18n('cond_wind_strong'),  en: i18n('cond_wind_strong') },
+    'tide-high':   { pt: i18n('cond_tide_high'),    en: i18n('cond_tide_high') },
+    'tide-low':    { pt: i18n('cond_tide_low'),     en: i18n('cond_tide_low') },
+    'score-high':  { pt: i18n('cond_score_high'),   en: i18n('cond_score_high') },
+  };
+  return labels[cond]?.[currentLang] ?? cond;
+};
 document.addEventListener('DOMContentLoaded', async () => {
   await PUSH.init();
   const _origNav = window.navigate;
