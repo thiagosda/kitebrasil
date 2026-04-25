@@ -584,10 +584,13 @@ window.startBannerTimer = function() {
     _dragging = false;
     const dx = e.changedTouches[0].clientX - _x0;
     if (Math.abs(dx) > 35) {
+      // Lê índice atual direto do dot ativo
+      const dots = document.querySelectorAll('.banner-dots .dot');
+      let current = 0;
+      dots.forEach((d, i) => { if (d.classList.contains('active')) current = i; });
       const total = getCurrentBanners().length;
-      const current = _bannerIdx ?? 0;
-      if (dx < 0) goToBanner(current + 1);        // esquerda → próximo
-      else         goToBanner((current - 1 + total) % total); // direita → anterior
+      if (dx < 0) goToBanner(current + 1);
+      else         goToBanner((current - 1 + total) % total);
     }
   }, { passive: true });
 };
