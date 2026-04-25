@@ -582,7 +582,6 @@ window.renderLocationBanners = function() {
     const hasImg = img && i < BANNER_IMAGES.length;
 
     if (hasImg) {
-      // Banner com imagem — só a imagem, sem texto por cima
       return `<div class="banner-slide" onclick="window.open('${safeUrl(b.url)}','_blank','noopener,noreferrer')" style="cursor:pointer">
         <div style="width:100%;height:120px;background-image:url(${img});background-size:cover;background-position:center;background-repeat:no-repeat;border-radius:14px;"></div>
       </div>`;
@@ -605,6 +604,26 @@ window.renderLocationBanners = function() {
   dots.innerHTML = banners.map((_, i) =>
     `<span class="dot ${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></span>`
   ).join('');
+
+  // Setas de navegação
+  const carousel = track.closest('.banner-carousel');
+  if (carousel && banners.length > 1) {
+    // Remove setas antigas se existirem
+    carousel.querySelectorAll('.banner-arrow').forEach(el => el.remove());
+
+    const prev = document.createElement('button');
+    prev.className = 'banner-arrow banner-arrow-prev';
+    prev.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    prev.onclick = (e) => { e.stopPropagation(); goToBanner(_bannerIdx - 1); };
+
+    const next = document.createElement('button');
+    next.className = 'banner-arrow banner-arrow-next';
+    next.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    next.onclick = (e) => { e.stopPropagation(); goToBanner(_bannerIdx + 1); };
+
+    carousel.appendChild(prev);
+    carousel.appendChild(next);
+  }
 
   track.style.transform = 'translateX(0)';
   startBannerTimer();
