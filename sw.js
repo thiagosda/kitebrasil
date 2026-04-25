@@ -1,5 +1,5 @@
 // ── KiteInforma Service Worker ─────────────────
-const CACHE_NAME = 'kiteinforma-v2';
+const CACHE_NAME = 'kiteinforma-v3';
 const ASSETS = [
   '/',
   '/index.html',
