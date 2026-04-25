@@ -561,51 +561,41 @@ function showIOSBanner() {
 const _origStartBannerTimer = window.startBannerTimer;
 window.startBannerTimer = function() {
   _origStartBannerTimer();
+  if (window._swipeAttached) return;
+  window._swipeAttached = true;
 
-  const track = document.getElementById('banner-track');
-  if (!track || track._swipeAttached) return;
-  track._swipeAttached = true;
+  let _x0 = 0, _y0 = 0, _inBanner = false;
 
-  let _x0 = 0, _moved = false;
-
-  track.addEventListener('touchstart', e => {
-    _x0 = e.touches[0].clientX;
-    _moved = false;
+  document.addEventListener('touchstart', e => {
+    const track = document.getElementById('banner-track');
+    if (!track) return;
+    const rect = track.getBoundingClientRect();
+    const t = e.touches[0];
+    _inBanner = t.clientX >= rect.left && t.clientX <= rect.right &&
+                t.clientY >= rect.top  && t.clientY <= rect.bottom;
+    if (!_inBanner) return;
+    _x0 = t.clientX;
+    _y0 = t.clientY;
   }, { passive: true });
 
-  track.addEventListener('touchmove', e => {
-    if (Math.abs(e.touches[0].clientX - _x0) > 10) _moved = true;
-  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (!_inBanner) return;
+    _inBanner = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - _x0;
+    const dy = t.clientY - _y0;
+    if (Math.abs(dx) < 35 || Math.abs(dx) < Math.abs(dy)) return;
 
-  track.addEventListener('touchend', e => {
-    if (!_moved) return;
-    const dx = e.changedTouches[0].clientX - _x0;
-    if (Math.abs(dx) < 35) return;
-
-    // Lê índice atual do transform
-    const style = window.getComputedStyle(track).transform;
-    // transform matrix: matrix(1,0,0,1,tx,ty) — tx é o offset em px
-    let current = 0;
-    if (style && style !== 'none') {
-      const matrix = style.match(/matrix.*\((.+)\)/);
-      if (matrix) {
-        const values = matrix[1].split(', ');
-        const tx = parseFloat(values[4]);
-        const slideW = track.offsetWidth / track.children.length;
-        current = slideW > 0 ? Math.round(-tx / (track.offsetWidth)) : 0;
-      }
-    }
-
+    const track = document.getElementById('banner-track');
+    if (!track) return;
     const total = track.children.length;
-    if (dx < 0) {
-      // swipe esquerda → próximo
-      const next = (current + 1) % total;
-      goToBanner(next);
-    } else {
-      // swipe direita → anterior
-      const prev = (current - 1 + total) % total;
-      goToBanner(prev);
-    }
+    // Índice atual pelos dots
+    const dots = document.querySelectorAll('#banner-dots .dot');
+    let current = 0;
+    dots.forEach((d, i) => { if (d.classList.contains('active')) current = i; });
+
+    if (dx < 0) goToBanner((current + 1) % total);
+    else         goToBanner((current - 1 + total) % total);
   }, { passive: true });
 };
 const BANNER_IMAGES = [
