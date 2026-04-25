@@ -1,561 +1,474 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-
-  <!-- Security headers -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://api.open-meteo.com https://marine-api.open-meteo.com; img-src 'self' data:; frame-ancestors 'none'; form-action 'self';">
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta name="robots" content="index, follow">
-
-  <title>KiteInforma — Condições de Kitesurf no Ceará</title>
-
-  <!-- SEO -->
-  <meta name="description" content="KiteInforma: condições de vento, maré e ondas em tempo real para kitesurf no Ceará. Preá, Jericoacoara, Cumbuco e mais 10 praias.">
-  <meta name="keywords"    content="kitesurf ceará, previsão vento preá, kite jericoacoara, maré cumbuco, kitesurf brasil">
-  <meta name="author"      content="KiteInforma">
-  <meta name="theme-color" content="#1a3a5c">
-
-  <!-- Open Graph (WhatsApp, Facebook) -->
-  <meta property="og:title"       content="KiteInforma — Kitesurf no Ceará">
-  <meta property="og:description" content="Vento, maré e ondas em tempo real para 13 praias do Ceará.">
-  <meta property="og:type"        content="website">
-  <meta property="og:url"         content="https://kiteinforma.com.br">
-
-  <!-- PWA -->
-  <meta name="mobile-web-app-capable"      content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title"  content="KiteInforma">
-
-  <link rel="stylesheet" href="css/style.css">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://api.open-meteo.com https://marine-api.open-meteo.com; img-src 'self' data:; frame-ancestors 'none'; form-action 'self';">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="robots" content="index, follow">
+<title>KiteInforma — Condições de Kitesurf no Ceará</title>
+<meta name="description" content="KiteInforma: condições de vento, maré e ondas em tempo real para kitesurf no Ceará. Preá, Jericoacoara, Cumbuco e mais 10 praias.">
+<meta name="keywords" content="kitesurf ceará, previsão vento preá, kite jericoacoara, maré cumbuco, kitesurf brasil">
+<meta name="author" content="KiteInforma">
+<meta name="theme-color" content="#1a3a5c">
+<meta property="og:title" content="KiteInforma — Kitesurf no Ceará">
+<meta property="og:description" content="Vento, maré e ondas em tempo real para 13 praias do Ceará.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kiteinforma.com.br">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KiteInforma">
+<link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
 <div class="app">
-
-  <!-- ── Tela: Kitesurf ── -->
-  <div class="screen active" id="screen-kitesurf">
-    <div class="header">
-      <div class="hero">
-        <div class="hero-top">
-          <div>
-            <div class="hero-location">CEARÁ · BRASIL</div>
-            <div class="hero-title">KiteInforma</div>
-            <div class="hero-date" id="hero-date"></div>
-          </div>
-          <div class="header-actions">
-            <button class="lang-toggle" id="lang-toggle" onclick="toggleLang()" aria-label="Idioma">PT</button>
-            <button class="bell-btn" onclick="navigate('alerts')" aria-label="Alertas">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2a7 7 0 00-7 7v3.5a3 3 0 01-.5 1.7L3 16h18l-1.5-1.8a3 3 0 01-.5-1.7V9a7 7 0 00-7-7z" stroke="#85b7eb" stroke-width="1.5" fill="none"/>
-                <path d="M9 18a3 3 0 006 0" stroke="#85b7eb" stroke-width="1.5"/>
-              </svg>
-              <span class="bell-badge" id="bell-badge" style="display:none">0</span>
-            </button>
-          </div>
-        </div>
-        <div class="spot-selector-wrap">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M7 1C4.79 1 3 2.79 3 5c0 3.25 4 8 4 8s4-4.75 4-8c0-2.21-1.79-4-4-4z" stroke="#85b7eb" stroke-width="1.2" fill="none"/>
-            <circle cx="7" cy="5" r="1.5" stroke="#85b7eb" stroke-width="1.2" fill="none"/>
-          </svg>
-          <select id="spot-selector" class="spot-select"></select>
-        </div>
-        <div class="score-block">
-          <div class="score-num" id="score-num">—</div>
-          <div>
-            <div class="score-label">SCORE DO DIA</div>
-            <div class="score-desc" id="score-desc">Carregando...</div>
-            <div class="score-sub"  id="score-sub"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="content">
-      <!-- Aviso de baixa temporada (fev–jun) -->
-      <div id="season-banner" class="season-banner" style="display:none">
-        <div class="season-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/>
-            <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div>
-          <div class="season-title">Baixa temporada</div>
-          <div class="season-sub">Ventos mais fracos agora · Alta temporada: julho a janeiro</div>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">CONDIÇÕES AGORA</div>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">Vento</div>
-            <div><span class="stat-value" id="wind-speed">—</span><span class="stat-unit"> nós</span></div>
-            <div class="stat-dir" id="wind-dir">—</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Rajadas</div>
-            <div><span class="stat-value" id="wind-gust">—</span><span class="stat-unit"> nós</span></div>
-            <div class="stat-dir">em tempo real</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Ondas</div>
-            <div><span class="stat-value" id="wave-height">—</span><span class="stat-unit"> m</span></div>
-            <div class="stat-dir" id="wave-period">—</div>
-          </div>
-          <div class="stat-card clickable" onclick="navigate('tide')">
-            <div class="stat-label">Maré ↗</div>
-            <div><span class="stat-value" id="tide-level">—</span><span class="stat-unit"> m</span></div>
-            <div class="stat-dir" id="tide-status">—</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">PREVISÃO 7 DIAS</div>
-        <div class="forecast-row" id="forecast-row"></div>
-      </div>
-
-      <!-- ── Banner rotativo ── -->
-      <div class="section" id="banner-section">
-        <div class="ads-label">Patrocinado</div>
-        <div class="banner-carousel">
-          <div class="banner-track" id="banner-track">
-
-            <!-- Banner 1: Escola de kite -->
-            <div class="banner-slide" onclick="window.open('https://preakiteschool.com.br','_blank')">
-              <div class="banner-slide-inner" style="background:linear-gradient(135deg,#0a2a40,#1a3a5c)">
-                <div class="bs-icon" style="background:#E1F5EE;color:#0F6E56">🎓</div>
-                <div class="bs-body">
-                  <div class="bs-tag">Escola Parceira</div>
-                  <div class="bs-title">Preá Kite School</div>
-                  <div class="bs-sub">Aulas para todos os níveis · Preá, CE</div>
-                </div>
-                <div class="bs-arrow">›</div>
-              </div>
-            </div>
-
-            <!-- Banner 2: Aluguel de equipamento -->
-            <div class="banner-slide" onclick="window.open('https://wa.me/5588999990001','_blank')">
-              <div class="banner-slide-inner" style="background:linear-gradient(135deg,#2d1a00,#4a2e00)">
-                <div class="bs-icon" style="background:#FAEEDA;color:#854F0B">🪁</div>
-                <div class="bs-body">
-                  <div class="bs-tag">Equipamentos</div>
-                  <div class="bs-title">Aluguel de Kite</div>
-                  <div class="bs-sub">Equipamentos novos · Reserve pelo WhatsApp</div>
-                </div>
-                <div class="bs-arrow">›</div>
-              </div>
-            </div>
-
-            <!-- Banner 3: Transfer / transporte -->
-            <div class="banner-slide" onclick="window.open('https://wa.me/5588999990002','_blank')">
-              <div class="banner-slide-inner" style="background:linear-gradient(135deg,#0a2d1a,#0f4a2a)">
-                <div class="bs-icon" style="background:#E1F5EE;color:#1D9E75">🚐</div>
-                <div class="bs-body">
-                  <div class="bs-tag">Transfer</div>
-                  <div class="bs-title">Fortaleza → Preá</div>
-                  <div class="bs-sub">Saídas diárias · Conforto e pontualidade</div>
-                </div>
-                <div class="bs-arrow">›</div>
-              </div>
-            </div>
-
-          </div>
-          <!-- Indicadores de posição -->
-          <div class="banner-dots" id="banner-dots">
-            <span class="dot active" onclick="goToSlide(0)"></span>
-            <span class="dot"        onclick="goToSlide(1)"></span>
-            <span class="dot"        onclick="goToSlide(2)"></span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Tela: Maré ── -->
-  <div class="screen" id="screen-tide">
-    <div class="header">
-      <div class="status-bar">
-        <span class="clock">9:41</span>
-        <span>Ceará, BR</span>
-      </div>
-      <div class="hero">
-        <div class="back-btn" onclick="navigate('kitesurf')">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M9 2L4 7l5 5" stroke="#85b7eb" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          Kitesurf
-        </div>
-        <div class="hero-title">Marés</div>
-        <div class="hero-date" id="tide-date"></div>
-        <div class="status-pill">
-          <div class="pill-dot" id="tide-dot"></div>
-          <span class="pill-text"  id="tide-pill-text">—</span>
-          <span class="pill-level" id="tide-pill-level">—</span>
-        </div>
-        <div class="level-bar-wrap">
-          <div class="level-bar-bg"><div class="level-bar-fill" id="tide-bar" style="width:0%"></div></div>
-          <div class="level-labels">
-            <span class="level-label">Seca (~0.4m)</span>
-            <span class="level-label">Cheia (~2.7m)</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="content">
-
-      <!-- Próxima maré -->
-      <div class="section">
-        <div class="next-tide-card" id="next-tide-card">
-          <div class="next-tide-icon" id="next-tide-icon">↑</div>
-          <div class="next-tide-body">
-            <div class="next-tide-label">Próxima maré</div>
-            <div class="next-tide-type"  id="next-tide-type">—</div>
-            <div class="next-tide-time"  id="next-tide-time">—</div>
-          </div>
-          <div class="next-tide-level" id="next-tide-level">—</div>
-        </div>
-      </div>
-
-      <!-- Gráfico de hoje -->
-      <div class="section">
-        <div class="section-title">GRÁFICO DE HOJE</div>
-        <div style="position:relative;height:120px;width:100%">
-          <canvas id="tideChart"></canvas>
-        </div>
-      </div>
-
-      <!-- Seletor de dia -->
-      <div class="section">
-        <div class="section-title">TÁBUA DE MARÉS — 7 DIAS</div>
-        <div class="day-tabs" id="day-tabs"></div>
-      </div>
-
-      <!-- Lista de marés do dia selecionado -->
-      <div class="section">
-        <div class="tide-events" id="tide-events"></div>
-      </div>
-
-      <!-- Dica -->
-      <div class="section">
-        <div class="section-title">DICA PARA HOJE</div>
-        <div class="kite-tip" id="tide-tip-box">
-          <div class="tip-icon">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M6 1v5M6 9v1" stroke="#E1F5EE" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div>
-            <div class="tip-title" id="tide-tip-title">Carregando...</div>
-            <div class="tip-text"  id="tide-tip-text"></div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ── Tela: Alertas ── -->
-  <div class="screen" id="screen-alerts">
-    <div class="header">
-      <div class="hero">
-        <div class="back-btn" onclick="navigate('kitesurf')">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M9 2L4 7l5 5" stroke="#85b7eb" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          <span data-i18n="back">Voltar</span>
-        </div>
-        <div class="hero-title" data-i18n="alerts_title">Meus Alertas</div>
-        <div class="hero-date" data-i18n="alerts_subtitle">Receba avisos quando as condições forem ideais</div>
-      </div>
-    </div>
-    <div class="content">
-
-      <!-- Lista de alertas ativos -->
-      <div class="section">
-        <div class="section-title-row">
-          <div class="section-title" data-i18n="active_alerts">ALERTAS ATIVOS</div>
-          <button class="add-alert-btn" onclick="openAlertForm()" aria-label="Novo alerta">+</button>
-        </div>
-        <div id="alerts-list">
-          <div class="empty-alerts" data-i18n="no_alerts">
-            Você ainda não tem alertas. Toque em + para criar o primeiro.
-          </div>
-        </div>
-      </div>
-
-      <!-- Formulário de novo alerta -->
-      <div class="section" id="alert-form" style="display:none">
-        <div class="section-title" data-i18n="new_alert">NOVO ALERTA</div>
-        <div class="alert-form-box">
-
-          <label class="form-label" data-i18n="alert_spot">Praia</label>
-          <select id="alert-spot" class="form-select"></select>
-
-          <label class="form-label" data-i18n="alert_condition">Condição</label>
-          <div class="alert-conditions">
-            <label class="condition-card">
-              <input type="radio" name="alert-cond" value="wind-good" checked>
-              <div class="cc-content">
-                <div class="cc-icon">🪁</div>
-                <div class="cc-body">
-                  <div class="cc-title" data-i18n="cond_wind_good">Vento bom para velejar</div>
-                  <div class="cc-sub" data-i18n="cond_wind_good_sub">Acima de 14 nós</div>
-                </div>
-              </div>
-            </label>
-            <label class="condition-card">
-              <input type="radio" name="alert-cond" value="wind-strong">
-              <div class="cc-content">
-                <div class="cc-icon">💨</div>
-                <div class="cc-body">
-                  <div class="cc-title" data-i18n="cond_wind_strong">Vento forte</div>
-                  <div class="cc-sub" data-i18n="cond_wind_strong_sub">Acima de 20 nós</div>
-                </div>
-              </div>
-            </label>
-            <label class="condition-card">
-              <input type="radio" name="alert-cond" value="tide-high">
-              <div class="cc-content">
-                <div class="cc-icon">🌊</div>
-                <div class="cc-body">
-                  <div class="cc-title" data-i18n="cond_tide_high">Maré alta</div>
-                  <div class="cc-sub" data-i18n="cond_tide_high_sub">Quando a maré subir acima de 2.5m</div>
-                </div>
-              </div>
-            </label>
-            <label class="condition-card">
-              <input type="radio" name="alert-cond" value="tide-low">
-              <div class="cc-content">
-                <div class="cc-icon">🏖️</div>
-                <div class="cc-body">
-                  <div class="cc-title" data-i18n="cond_tide_low">Maré baixa</div>
-                  <div class="cc-sub" data-i18n="cond_tide_low_sub">Quando a maré baixar abaixo de 0.6m</div>
-                </div>
-              </div>
-            </label>
-            <label class="condition-card">
-              <input type="radio" name="alert-cond" value="score-high">
-              <div class="cc-content">
-                <div class="cc-icon">⭐</div>
-                <div class="cc-body">
-                  <div class="cc-title" data-i18n="cond_score_high">Dia excelente</div>
-                  <div class="cc-sub" data-i18n="cond_score_high_sub">Score do dia 8 ou mais</div>
-                </div>
-              </div>
-            </label>
-          </div>
-
-          <div class="form-actions">
-            <button class="btn-secondary" onclick="closeAlertForm()" data-i18n="cancel">Cancelar</button>
-            <button class="btn-primary" onclick="saveAlert()" data-i18n="save_alert">Salvar Alerta</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Como funciona -->
-      <div class="section">
-        <div class="section-title" data-i18n="how_works">COMO FUNCIONA</div>
-        <div class="info-card">
-          <div class="info-row">
-            <div class="info-num">1</div>
-            <div class="info-text" data-i18n="how_step1">Crie um alerta escolhendo a praia e a condição que você quer monitorar.</div>
-          </div>
-          <div class="info-row">
-            <div class="info-num">2</div>
-            <div class="info-text" data-i18n="how_step2">Quando você abrir o app e a condição for atingida, um aviso aparece destacado.</div>
-          </div>
-          <div class="info-row">
-            <div class="info-num">3</div>
-            <div class="info-text" data-i18n="how_step3">Você pode criar quantos alertas quiser e remover a qualquer momento.</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ── Tela: Escolas ── -->
-  <div class="screen" id="screen-schools">
-    <div class="header">
-      <div class="hero">
-        <div class="hero-location">CEARÁ · BRASIL</div>
-        <div class="hero-title" id="schools-page-title">Escolas</div>
-        <div class="spot-selector-wrap">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M7 1C4.79 1 3 2.79 3 5c0 3.25 4 8 4 8s4-4.75 4-8c0-2.21-1.79-4-4-4z" stroke="#85b7eb" stroke-width="1.2" fill="none"/>
-            <circle cx="7" cy="5" r="1.5" stroke="#85b7eb" stroke-width="1.2" fill="none"/>
-          </svg>
-          <select id="spot-selector-schools" class="spot-select"></select>
-        </div>
-      </div>
-    </div>
-    <div class="content">
-      <div class="section">
-        <div class="schools-list" id="schools-list-page"></div>
-      </div>
-      <!-- Banner patrocinado escolas -->
-      <div class="section">
-        <div class="ads-label">Patrocinado</div>
-        <div class="ad-card ad-wide" onclick="window.open('mailto:anuncie@kiteinforma.com.br','_blank')">
-          <div class="ad-icon" style="background:#EAF3DE;color:#27500A">⭐</div>
-          <div class="ad-body">
-            <div class="ad-title">Destaque sua escola aqui</div>
-            <div class="ad-sub">Alcance kitesurfistas do mundo todo</div>
-          </div>
-          <div class="ad-btn">Anunciar</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Tela: Perfil da Escola ── -->
-  <div class="screen" id="screen-school">
-    <div class="header">
-      <div class="hero">
-        <div class="back-btn" onclick="navigate('schools')">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M9 2L4 7l5 5" stroke="#85b7eb" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          Escolas
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px;margin-top:4px">
-          <div class="school-logo-big" id="school-logo"></div>
-          <div>
-            <div class="open-badge"  id="school-badge">Aberta agora</div>
-            <div class="hero-title"  id="school-name-title"></div>
-            <div class="hero-date"   id="school-loc-title"></div>
-            <div class="rating-row">
-              <span class="stars-big">★★★★★</span>
-              <span class="rating-num"   id="school-rating"></span>
-              <span class="rating-count" id="school-reviews"></span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="content">
-      <!-- Botões de contato -->
-      <div class="section">
-        <div class="contact-row">
-          <button class="contact-btn-phone" id="school-phone-btn">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M2 2.5C2 2.5 3 1 4.5 1c.5 0 1 .3 1.3.8L7 4c.3.5.2 1.1-.2 1.5L5.5 6.8C6.3 8.2 7.8 9.7 9.2 10.5l1.3-1.3c.4-.4 1-.5 1.5-.2l2.2 1.2c.5.3.8.8.8 1.3 0 1.5-1.5 2.5-1.5 2.5C5 17 -1 5 2 2.5z" stroke="currentColor" stroke-width="1.2" fill="none"/>
-            </svg>
-            Ligar
-          </button>
-          <button class="contact-btn-whatsapp" id="school-whatsapp-btn">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/>
-              <path d="M5.5 5.5c.2-.2.8-.3 1 .2l.5 1.2c.1.3 0 .6-.2.8l-.3.3c.4.8 1 1.4 1.8 1.8l.3-.3c.2-.2.5-.3.8-.2l1.2.5c.5.2.4.8.2 1-.5.7-1.5 1-2.3.6C7 10.7 5.3 9 4.9 7.8c-.4-.8-.1-1.8.6-2.3z" stroke="currentColor" stroke-width="1.1" fill="none"/>
-            </svg>
-            WhatsApp
-          </button>
-          <button class="contact-btn-site" id="school-site-btn">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/>
-              <path d="M8 1.5c0 0-3 2-3 6.5s3 6.5 3 6.5M8 1.5c0 0 3 2 3 6.5S8 14.5 8 14.5M1.5 8h13" stroke="currentColor" stroke-width="1.2"/>
-            </svg>
-            Site
-          </button>
-        </div>
-      </div>
-
-      <!-- Localização -->
-      <div class="section">
-        <div class="section-title">LOCALIZAÇÃO</div>
-        <div class="map-box">
-          <div class="map-placeholder" id="school-map-link">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="var(--blue-mid)" stroke-width="1.5" fill="none"/>
-              <circle cx="12" cy="9" r="2.5" stroke="var(--blue-mid)" stroke-width="1.5" fill="none"/>
-            </svg>
-            <span>Ver no Google Maps</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Avaliações -->
-      <div class="section">
-        <div class="section-title-row">
-          <div class="section-title">AVALIAÇÕES DO GOOGLE</div>
-          <div class="google-rating" id="school-google-rating"></div>
-        </div>
-        <div class="reviews" id="school-reviews-list"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Barra de navegação ── -->
-  <div class="nav-bar">
-    <div class="nav-item active" id="nav-kitesurf" onclick="navigate('kitesurf')">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.2" fill="none"/>
-      </svg>
-      <span>Kitesurf</span>
-    </div>
-    <div class="nav-item" id="nav-tide" onclick="navigate('tide')">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <path d="M2 15c2-3 4-3 6 0s4 3 6 0 4-3 6 0" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-        <path d="M2 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-      </svg>
-      <span>Maré</span>
-    </div>
-    <div class="nav-item" id="nav-schools" onclick="navigate('schools')">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <rect x="3" y="7" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/>
-        <path d="M8 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.2" fill="none"/>
-      </svg>
-      <span>Escolas</span>
-    </div>
-  </div>
-
+<div class="screen active" id="screen-kitesurf">
+<div class="header">
+<div class="hero">
+<div class="hero-top">
+<div>
+<div class="hero-location" data-i18n="location">CEARÁ · BRASIL</div>
+<div class="hero-title">KiteInforma</div>
+<div class="hero-date" id="hero-date"></div>
+</div>
+<div class="header-actions">
+<button class="lang-toggle" id="lang-toggle" onclick="toggleLang()" aria-label="Idioma"></button>
+<button class="bell-btn" onclick="navigate('alerts')" aria-label="Alertas">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+<path d="M12 2a7 7 0 00-7 7v3.5a3 3 0 01-.5 1.7L3 16h18l-1.5-1.8a3 3 0 01-.5-1.7V9a7 7 0 00-7-7z" stroke="#85b7eb" stroke-width="1.5" fill="none"/>
+<path d="M9 18a3 3 0 006 0" stroke="#85b7eb" stroke-width="1.5"/>
+</svg>
+<span class="bell-badge" id="bell-badge" style="display:none">0</span>
+</button>
+</div>
+</div>
+<div class="spot-selector-wrap">
+<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+<path d="M7 1C4.79 1 3 2.79 3 5c0 3.25 4 8 4 8s4-4.75 4-8c0-2.21-1.79-4-4-4z" stroke="#85b7eb" stroke-width="1.2" fill="none"/>
+<circle cx="7" cy="5" r="1.5" stroke="#85b7eb" stroke-width="1.2" fill="none"/>
+</svg>
+<select id="spot-selector" class="spot-select"></select>
+</div>
+<div class="score-block">
+<div class="score-num" id="score-num">—</div>
+<div>
+<div class="score-label" data-i18n="score_label">SCORE DO DIA</div>
+<div class="score-desc" id="score-desc" data-i18n="loading">Carregando...</div>
+<div class="score-sub" id="score-sub"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="content">
+<div id="season-banner" class="season-banner" style="display:none">
+<div class="season-icon">
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+<circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/>
+<path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+</svg>
+</div>
+<div>
+<div class="season-title" data-i18n="season_title">Baixa temporada</div>
+<div class="season-sub" data-i18n="season_sub">Ventos mais fracos agora · Alta temporada: julho a janeiro</div>
+</div>
+</div>
+<div class="section">
+<div class="section-title" data-i18n="conditions_now">CONDIÇÕES AGORA</div>
+<div class="stats-grid">
+<div class="stat-card">
+<div class="stat-label" data-i18n="wind">Vento</div>
+<div><span class="stat-value" id="wind-speed">—</span><span class="stat-unit"> nós</span></div>
+<div class="stat-dir" id="wind-dir">—</div>
+</div>
+<div class="stat-card">
+<div class="stat-label" data-i18n="gusts">Rajadas</div>
+<div><span class="stat-value" id="wind-gust">—</span><span class="stat-unit"> nós</span></div>
+<div class="stat-dir" data-i18n="realtime">em tempo real</div>
+</div>
+<div class="stat-card">
+<div class="stat-label" data-i18n="waves">Ondas</div>
+<div><span class="stat-value" id="wave-height">—</span><span class="stat-unit"> m</span></div>
+<div class="stat-dir" id="wave-period">—</div>
+</div>
+<div class="stat-card clickable" onclick="navigate('tide')">
+<div class="stat-label" data-i18n="tide">Maré</div>
+<div><span class="stat-value" id="tide-level">—</span><span class="stat-unit"> m</span></div>
+<div class="stat-dir" id="tide-status">—</div>
+</div>
+</div>
+</div>
+<div class="section">
+<div class="section-title" data-i18n="forecast_7d">PREVISÃO 7 DIAS</div>
+<div class="forecast-row" id="forecast-row"></div>
 </div>
 
+<!-- BANNER PREMIUM -->
+<div class="section" id="banner-section">
+<div class="ads-label" data-i18n="sponsored">Patrocinado</div>
+<div class="banner-premium">
+<svg class="banner-illustration" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" style="stop-color:#4a90e2;stop-opacity:0.2"/>
+<stop offset="100%" style="stop-color:#1a3a5c;stop-opacity:0.1"/>
+</linearGradient>
+<linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+<stop offset="0%" style="stop-color:#85b7eb;stop-opacity:0.3"/>
+<stop offset="50%" style="stop-color:#4a90e2;stop-opacity:0.2"/>
+<stop offset="100%" style="stop-color:#85b7eb;stop-opacity:0.3"/>
+</linearGradient>
+</defs>
+<rect width="400" height="200" fill="url(#skyGrad)"/>
+<path class="wave-anim" d="M0 120 Q 50 100, 100 120 T 200 120 T 300 120 T 400 120 L400 200 L0 200 Z" fill="url(#waveGrad)"/>
+<path class="kite-path" d="M 320 40 L 340 60 L 320 80 L 300 60 Z" fill="#e74c3c" opacity="0.8"/>
+<line class="kite-line" x1="330" y1="70" x2="310" y2="140" stroke="#e74c3c" stroke-width="1" opacity="0.6"/>
+</svg>
+<div class="banner-content">
+<div class="banner-eyebrow" data-i18n="partner_school">Escola Parceira</div>
+<div class="banner-title" data-i18n="banner_title">Preá Kite School</div>
+<div class="banner-subtitle" data-i18n="banner_subtitle">Aulas profissionais para todos os níveis · Preá, CE</div>
+<a href="https://preakiteschool.com.br" target="_blank" class="banner-cta" data-i18n="learn_more">Saiba Mais</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="screen" id="screen-tide">
+<div class="header">
+<div class="status-bar">
+<span class="clock">9:41</span>
+<span>Ceará, BR</span>
+</div>
+<div class="hero">
+<div class="back-btn" onclick="navigate('kitesurf')">
+<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+<path d="M9 2L4 7l5 5" stroke="#85b7eb" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+<span data-i18n="kitesurf">Kitesurf</span>
+</div>
+<div class="hero-title" data-i18n="tides">Marés</div>
+<div class="hero-date" id="tide-date"></div>
+<div class="status-pill">
+<div class="pill-dot" id="tide-dot"></div>
+<span class="pill-text" id="tide-pill-text">—</span>
+<span class="pill-level" id="tide-pill-level">—</span>
+</div>
+<div class="level-bar-wrap">
+<div class="level-bar-bg"><div class="level-bar-fill" id="tide-bar" style="width:0%"></div></div>
+<div class="level-labels">
+<span class="level-label" data-i18n="low_tide">Seca (~0.4m)</span>
+<span class="level-label" data-i18n="high_tide">Cheia (~2.7m)</span>
+</div>
+</div>
+</div>
+</div>
+<div class="content">
+<div class="section">
+<div class="next-tide-card" id="next-tide-card">
+<div class="next-tide-icon" id="next-tide-icon">↑</div>
+<div class="next-tide-body">
+<div class="next-tide-label" data-i18n="next_tide">Próxima maré</div>
+<div class="next-tide-type" id="next-tide-type">—</div>
+<div class="next-tide-time" id="next-tide-time">—</div>
+</div>
+<div class="next-tide-level" id="next-tide-level">—</div>
+</div>
+</div>
+<div class="section">
+<div class="section-title" data-i18n="today_chart">GRÁFICO DE HOJE</div>
+<div style="position:relative;height:120px;width:100%">
+<canvas id="tideChart"></canvas>
+</div>
+</div>
+<div class="section">
+<div class="section-title" data-i18n="tide_table">TÁBUA DE MARÉS — 7 DIAS</div>
+<div class="day-tabs" id="day-tabs"></div>
+</div>
+<div class="section">
+<div class="tide-events" id="tide-events"></div>
+</div>
+<div class="section">
+<div class="section-title" data-i18n="tip_today">DICA PARA HOJE</div>
+<div class="kite-tip" id="tide-tip-box">
+<div class="tip-icon">
+<svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+<path d="M6 1v5M6 9v1" stroke="#E1F5EE" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+</div>
+<div>
+<div class="tip-title" id="tide-tip-title" data-i18n="loading">Carregando...</div>
+<div class="tip-text" id="tide-tip-text"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="screen" id="screen-alerts">
+<div class="header">
+<div class="hero">
+<div class="back-btn" onclick="navigate('kitesurf')">
+<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+<path d="M9 2L4 7l5 5" stroke="#85b7eb" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+<span data-i18n="back">Voltar</span>
+</div>
+<div class="hero-title" data-i18n="alerts_title">Meus Alertas</div>
+<div class="hero-date" data-i18n="alerts_subtitle">Receba avisos quando as condições forem ideais</div>
+</div>
+</div>
+<div class="content">
+<div class="section">
+<div class="section-title-row">
+<div class="section-title" data-i18n="active_alerts">ALERTAS ATIVOS</div>
+<button class="add-alert-btn" onclick="openAlertForm()" aria-label="Novo alerta">+</button>
+</div>
+<div id="alerts-list">
+<div class="empty-alerts" data-i18n="no_alerts">
+Você ainda não tem alertas. Toque em + para criar o primeiro.
+</div>
+</div>
+</div>
+<div class="section" id="alert-form" style="display:none">
+<div class="section-title" data-i18n="new_alert">NOVO ALERTA</div>
+<div class="alert-form-box">
+<label class="form-label" data-i18n="alert_spot">Praia</label>
+<select id="alert-spot" class="form-select"></select>
+<label class="form-label" data-i18n="alert_condition">Condição</label>
+<div class="alert-conditions">
+<label class="condition-card">
+<input type="radio" name="alert-cond" value="wind-good" checked>
+<div class="cc-content">
+<div class="cc-icon">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+</svg>
+</div>
+<div class="cc-body">
+<div class="cc-title" data-i18n="cond_wind_good">Vento bom para velejar</div>
+<div class="cc-sub" data-i18n="cond_wind_good_sub">Acima de 14 nós</div>
+</div>
+</div>
+</label>
+<label class="condition-card">
+<input type="radio" name="alert-cond" value="wind-strong">
+<div class="cc-content">
+<div class="cc-icon">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+<path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+</svg>
+</div>
+<div class="cc-body">
+<div class="cc-title" data-i18n="cond_wind_strong">Vento forte</div>
+<div class="cc-sub" data-i18n="cond_wind_strong_sub">Acima de 20 nós</div>
+</div>
+</div>
+</label>
+<label class="condition-card">
+<input type="radio" name="alert-cond" value="tide-high">
+<div class="cc-content">
+<div class="cc-icon">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<path d="M2 12c.6-2.4 2-4 4-4s3.4 1.6 4 4c.6 2.4 2 4 4 4s3.4-1.6 4-4 2-4 4-4"/>
+</svg>
+</div>
+<div class="cc-body">
+<div class="cc-title" data-i18n="cond_tide_high">Maré alta</div>
+<div class="cc-sub" data-i18n="cond_tide_high_sub">Quando a maré subir acima de 2.5m</div>
+</div>
+</div>
+</label>
+<label class="condition-card">
+<input type="radio" name="alert-cond" value="tide-low">
+<div class="cc-content">
+<div class="cc-icon">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<path d="M3 17l6-6 4 4 8-8"/>
+</svg>
+</div>
+<div class="cc-body">
+<div class="cc-title" data-i18n="cond_tide_low">Maré baixa</div>
+<div class="cc-sub" data-i18n="cond_tide_low_sub">Quando a maré baixar abaixo de 0.6m</div>
+</div>
+</div>
+</label>
+<label class="condition-card">
+<input type="radio" name="alert-cond" value="score-high">
+<div class="cc-content">
+<div class="cc-icon">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+</svg>
+</div>
+<div class="cc-body">
+<div class="cc-title" data-i18n="cond_score_high">Dia excelente</div>
+<div class="cc-sub" data-i18n="cond_score_high_sub">Score do dia 8 ou mais</div>
+</div>
+</div>
+</label>
+</div>
+<div class="form-actions">
+<button class="btn-secondary" onclick="closeAlertForm()" data-i18n="cancel">Cancelar</button>
+<button class="btn-primary" onclick="saveAlert()" data-i18n="save_alert">Salvar Alerta</button>
+</div>
+</div>
+</div>
+<div class="section">
+<div class="section-title" data-i18n="how_works">COMO FUNCIONA</div>
+<div class="info-card">
+<div class="info-row">
+<div class="info-num">1</div>
+<div class="info-text" data-i18n="how_step1">Crie um alerta escolhendo a praia e a condição que você quer monitorar.</div>
+</div>
+<div class="info-row">
+<div class="info-num">2</div>
+<div class="info-text" data-i18n="how_step2">Quando você abrir o app e a condição for atingida, um aviso aparece destacado.</div>
+</div>
+<div class="info-row">
+<div class="info-num">3</div>
+<div class="info-text" data-i18n="how_step3">Você pode criar quantos alertas quiser e remover a qualquer momento.</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="screen" id="screen-schools">
+<div class="header">
+<div class="hero">
+<div class="hero-location" data-i18n="location">CEARÁ · BRASIL</div>
+<div class="hero-title" id="schools-page-title" data-i18n="schools">Escolas</div>
+<div class="spot-selector-wrap">
+<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+<path d="M7 1C4.79 1 3 2.79 3 5c0 3.25 4 8 4 8s4-4.75 4-8c0-2.21-1.79-4-4-4z" stroke="#85b7eb" stroke-width="1.2" fill="none"/>
+<circle cx="7" cy="5" r="1.5" stroke="#85b7eb" stroke-width="1.2" fill="none"/>
+</svg>
+<select id="spot-selector-schools" class="spot-select"></select>
+</div>
+</div>
+</div>
+<div class="content">
+<div class="section">
+<div class="schools-list" id="schools-list-page"></div>
+</div>
+<div class="section">
+<div class="ads-label" data-i18n="sponsored">Patrocinado</div>
+<div class="ad-card ad-wide" onclick="window.open('mailto:anuncie@kiteinforma.com.br','_blank')">
+<div class="ad-icon" style="background:#EAF3DE;color:#27500A">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+</svg>
+</div>
+<div class="ad-body">
+<div class="ad-title" data-i18n="ad_title">Destaque sua escola aqui</div>
+<div class="ad-sub" data-i18n="ad_subtitle">Alcance kitesurfistas do mundo todo</div>
+</div>
+<div class="ad-btn" data-i18n="advertise">Anunciar</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="screen" id="screen-school">
+<div class="header">
+<div class="hero">
+<div class="back-btn" onclick="navigate('schools')">
+<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+<path d="M9 2L4 7l5 5" stroke="#85b7eb" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+<span data-i18n="schools">Escolas</span>
+</div>
+<div style="display:flex;align-items:flex-start;gap:12px;margin-top:4px">
+<div class="school-logo-big" id="school-logo"></div>
+<div>
+<div class="open-badge" id="school-badge" data-i18n="open_now">Aberta agora</div>
+<div class="hero-title" id="school-name-title"></div>
+<div class="hero-date" id="school-loc-title"></div>
+<div class="rating-row">
+<span class="stars-big">★★★★★</span>
+<span class="rating-num" id="school-rating"></span>
+<span class="rating-count" id="school-reviews"></span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="content">
+<div class="section">
+<div class="contact-row">
+<button class="contact-btn-phone" id="school-phone-btn">
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+<path d="M2 2.5C2 2.5 3 1 4.5 1c.5 0 1 .3 1.3.8L7 4c.3.5.2 1.1-.2 1.5L5.5 6.8C6.3 8.2 7.8 9.7 9.2 10.5l1.3-1.3c.4-.4 1-.5 1.5-.2l2.2 1.2c.5.3.8.8.8 1.3 0 1.5-1.5 2.5-1.5 2.5C5 17 -1 5 2 2.5z" stroke="currentColor" stroke-width="1.2" fill="none"/>
+</svg>
+<span data-i18n="call">Ligar</span>
+</button>
+<button class="contact-btn-whatsapp" id="school-whatsapp-btn">
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/>
+<path d="M5.5 5.5c.2-.2.8-.3 1 .2l.5 1.2c.1.3 0 .6-.2.8l-.3.3c.4.8 1 1.4 1.8 1.8l.3-.3c.2-.2.5-.3.8-.2l1.2.5c.5.2.4.8.2 1-.5.7-1.5 1-2.3.6C7 10.7 5.3 9 4.9 7.8c-.4-.8-.1-1.8.6-2.3z" stroke="currentColor" stroke-width="1.1" fill="none"/>
+</svg>
+WhatsApp
+</button>
+<button class="contact-btn-site" id="school-site-btn">
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/>
+<path d="M8 1.5c0 0-3 2-3 6.5s3 6.5 3 6.5M8 1.5c0 0 3 2 3 6.5S8 14.5 8 14.5M1.5 8h13" stroke="currentColor" stroke-width="1.2"/>
+</svg>
+<span data-i18n="website">Site</span>
+</button>
+</div>
+</div>
+<div class="section">
+<div class="section-title" data-i18n="location_title">LOCALIZAÇÃO</div>
+<div class="map-box">
+<div class="map-placeholder" id="school-map-link">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="var(--blue-mid)" stroke-width="1.5" fill="none"/>
+<circle cx="12" cy="9" r="2.5" stroke="var(--blue-mid)" stroke-width="1.5" fill="none"/>
+</svg>
+<span data-i18n="view_map">Ver no Google Maps</span>
+</div>
+</div>
+</div>
+<div class="section">
+<div class="section-title-row">
+<div class="section-title" data-i18n="google_reviews">AVALIAÇÕES DO GOOGLE</div>
+<div class="google-rating" id="school-google-rating"></div>
+</div>
+<div class="reviews" id="school-reviews-list"></div>
+</div>
+</div>
+</div>
+
+<div class="nav-bar">
+<div class="nav-item active" id="nav-kitesurf" onclick="navigate('kitesurf')">
+<svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+<path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.2" fill="none"/>
+</svg>
+<span data-i18n="kitesurf">Kitesurf</span>
+</div>
+<div class="nav-item" id="nav-tide" onclick="navigate('tide')">
+<svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+<path d="M2 15c2-3 4-3 6 0s4 3 6 0 4-3 6 0" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+<path d="M2 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+</svg>
+<span data-i18n="tide_nav">Maré</span>
+</div>
+<div class="nav-item" id="nav-schools" onclick="navigate('schools')">
+<svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+<rect x="3" y="7" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/>
+<path d="M8 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.2" fill="none"/>
+</svg>
+<span data-i18n="schools">Escolas</span>
+</div>
+</div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
-<script>
-// ── Banner carrossel ──────────────────────────
-let bannerIndex  = 0;
-const TOTAL_SLIDES = 3;
-let bannerTimer  = null;
-
-function goToSlide(n) {
-  bannerIndex = (n + TOTAL_SLIDES) % TOTAL_SLIDES;
-  const track = document.getElementById('banner-track');
-  if (track) track.style.transform = `translateX(-${bannerIndex * 100}%)`;
-  document.querySelectorAll('.dot').forEach((d, i) =>
-    d.classList.toggle('active', i === bannerIndex)
-  );
-}
-
-function nextSlide() { goToSlide(bannerIndex + 1); }
-
-function startBannerTimer() {
-  bannerTimer = setInterval(nextSlide, 4000);
-}
-
-function pauseBannerOnHover() {
-  const track = document.getElementById('banner-track');
-  if (!track) return;
-  track.addEventListener('mouseenter', () => clearInterval(bannerTimer));
-  track.addEventListener('mouseleave', startBannerTimer);
-  track.addEventListener('touchstart', () => clearInterval(bannerTimer), { passive: true });
-  track.addEventListener('touchend',   startBannerTimer, { passive: true });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  startBannerTimer();
-  pauseBannerOnHover();
-});
-</script>
+<script src="js/i18n.js"></script>
 </body>
 </html>
