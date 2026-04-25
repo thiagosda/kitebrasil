@@ -592,8 +592,8 @@ window.startBannerTimer = function() {
   }, 300);
 };
 const BANNER_IMAGES = [
-  'imagens/banner1.jpg',
-  'imagens/banner2.jpg',
+  'imagens/banneragenciabellajeri.png',
+  'imagens/bannercasadomangue.png',
 ];
 
 window.renderLocationBanners = function() {
