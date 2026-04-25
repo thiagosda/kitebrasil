@@ -605,30 +605,36 @@ window.renderLocationBanners = function() {
     `<span class="dot ${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></span>`
   ).join('');
 
-  // Remove setas antigas se existirem
-  const carousel = track.closest('.banner-carousel');
+  // Swipe — aplicado no carrossel inteiro
+  const carousel = track.closest('.banner-carousel') || track.parentElement;
   if (carousel) {
     carousel.querySelectorAll('.banner-arrow').forEach(el => el.remove());
+
+    let _tx = 0, _ty = 0, _moved = false;
+
+    carousel.addEventListener('touchstart', e => {
+      _tx     = e.touches[0].clientX;
+      _ty     = e.touches[0].clientY;
+      _moved  = false;
+    }, { passive: true });
+
+    carousel.addEventListener('touchmove', e => {
+      const dx = Math.abs(e.touches[0].clientX - _tx);
+      const dy = Math.abs(e.touches[0].clientY - _ty);
+      if (dx > dy && dx > 10) _moved = true;
+    }, { passive: true });
+
+    carousel.addEventListener('touchend', e => {
+      if (!_moved) return; // foi toque, não arraste
+      const dx = e.changedTouches[0].clientX - _tx;
+      if (Math.abs(dx) > 40) {
+        dx < 0
+          ? goToBanner(_bannerIdx + 1)
+          : goToBanner(_bannerIdx - 1);
+      }
+      _moved = false;
+    }, { passive: true });
   }
-
-  // Swipe com o dedo
-  let _touchStartX = 0;
-  let _touchStartY = 0;
-
-  track.addEventListener('touchstart', e => {
-    _touchStartX = e.touches[0].clientX;
-    _touchStartY = e.touches[0].clientY;
-  }, { passive: true });
-
-  track.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - _touchStartX;
-    const dy = e.changedTouches[0].clientY - _touchStartY;
-    // Só considera swipe horizontal (ignora scroll vertical)
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
-      if (dx < 0) goToBanner(_bannerIdx + 1); // swipe esquerda → próximo
-      else         goToBanner(_bannerIdx - 1); // swipe direita → anterior
-    }
-  }, { passive: true });
 
   track.style.transform = 'translateX(0)';
   startBannerTimer();
