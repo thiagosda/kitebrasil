@@ -557,7 +557,37 @@ function showIOSBanner() {
   banner.style.display = 'block';
 }
 
-// ── 16. Banners com imagem de fundo ──────────────
+// ── Swipe no banner ──────────────────────────────
+const _origStartBannerTimer = window.startBannerTimer;
+window.startBannerTimer = function() {
+  _origStartBannerTimer();
+
+  const track = document.getElementById('banner-track');
+  if (!track || track._swipeAttached) return;
+  track._swipeAttached = true;
+
+  let _x0 = 0, _dragging = false, _moved = false;
+
+  track.addEventListener('touchstart', e => {
+    _x0 = e.touches[0].clientX;
+    _dragging = true;
+    _moved = false;
+  }, { passive: true });
+
+  track.addEventListener('touchmove', e => {
+    if (!_dragging) return;
+    if (Math.abs(e.touches[0].clientX - _x0) > 10) _moved = true;
+  }, { passive: true });
+
+  track.addEventListener('touchend', e => {
+    if (!_dragging || !_moved) { _dragging = false; return; }
+    _dragging = false;
+    const dx = e.changedTouches[0].clientX - _x0;
+    if (Math.abs(dx) > 35) {
+      dx < 0 ? goToBanner(_bannerIdx + 1) : goToBanner(_bannerIdx - 1);
+    }
+  }, { passive: true });
+};
 const BANNER_IMAGES = [
   'imagens/banner1.jpg',
   'imagens/banner2.jpg',
@@ -604,39 +634,6 @@ window.renderLocationBanners = function() {
   dots.innerHTML = banners.map((_, i) =>
     `<span class="dot ${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></span>`
   ).join('');
-
-  // Swipe com pointer events (funciona em touch e mouse)
-  const carousel = track.closest('.banner-carousel') || track.parentElement;
-  if (carousel && banners.length > 1) {
-    carousel.querySelectorAll('.banner-arrow').forEach(el => el.remove());
-
-    let _px = 0, _isDragging = false, _hasMoved = false;
-
-    carousel.style.userSelect = 'none';
-
-    carousel.addEventListener('pointerdown', e => {
-      _px = e.clientX;
-      _isDragging = true;
-      _hasMoved = false;
-      carousel.setPointerCapture(e.pointerId);
-    });
-
-    carousel.addEventListener('pointermove', e => {
-      if (!_isDragging) return;
-      if (Math.abs(e.clientX - _px) > 8) _hasMoved = true;
-    });
-
-    carousel.addEventListener('pointerup', e => {
-      if (!_isDragging) return;
-      _isDragging = false;
-      const dx = e.clientX - _px;
-      if (_hasMoved && Math.abs(dx) > 40) {
-        dx < 0 ? goToBanner(_bannerIdx + 1) : goToBanner(_bannerIdx - 1);
-      }
-    });
-
-    carousel.addEventListener('pointercancel', () => { _isDragging = false; });
-  }
 
   track.style.transform = 'translateX(0)';
   startBannerTimer();
