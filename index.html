@@ -128,10 +128,6 @@
 <!-- ── Tela: Maré ── -->
 <div class="screen" id="screen-tide">
   <div class="header">
-    <div class="status-bar">
-      <span class="clock">—:—</span>
-      <span>Ceará, BR</span>
-    </div>
     <div class="hero">
       <div class="back-btn" onclick="navigate('kitesurf')">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -194,8 +190,8 @@
       <div class="section-title">DICA PARA HOJE</div>
       <div class="kite-tip" id="tide-tip-box">
         <div class="tip-icon">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M6 1v5M6 9v1" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1v6M7 10v1" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
         </div>
         <div>
@@ -228,6 +224,8 @@
         <div class="section-title" data-i18n="active_alerts">ALERTAS ATIVOS</div>
         <button class="add-alert-btn" onclick="openAlertForm()" aria-label="Novo alerta">+</button>
       </div>
+      <!-- Botão Push Notifications -->
+      <div id="notif-btn-container" style="margin-bottom:14px"></div>
       <div id="alerts-list">
         <div class="empty-alerts" data-i18n="no_alerts">Você ainda não tem alertas. Toque em + para criar o primeiro.</div>
       </div>
@@ -452,5 +450,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
+<script src="js/patch.js"></script>
 </body>
 </html>
