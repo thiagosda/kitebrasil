@@ -566,31 +566,45 @@ window.startBannerTimer = function() {
   if (!track || track._swipeAttached) return;
   track._swipeAttached = true;
 
-  let _x0 = 0, _dragging = false, _moved = false;
+  let _x0 = 0, _moved = false;
 
   track.addEventListener('touchstart', e => {
     _x0 = e.touches[0].clientX;
-    _dragging = true;
     _moved = false;
   }, { passive: true });
 
   track.addEventListener('touchmove', e => {
-    if (!_dragging) return;
     if (Math.abs(e.touches[0].clientX - _x0) > 10) _moved = true;
   }, { passive: true });
 
   track.addEventListener('touchend', e => {
-    if (!_dragging || !_moved) { _dragging = false; return; }
-    _dragging = false;
+    if (!_moved) return;
     const dx = e.changedTouches[0].clientX - _x0;
-    if (Math.abs(dx) > 35) {
-      // Lê índice atual direto do dot ativo
-      const dots = document.querySelectorAll('.banner-dots .dot');
-      let current = 0;
-      dots.forEach((d, i) => { if (d.classList.contains('active')) current = i; });
-      const total = getCurrentBanners().length;
-      if (dx < 0) goToBanner(current + 1);
-      else         goToBanner((current - 1 + total) % total);
+    if (Math.abs(dx) < 35) return;
+
+    // Lê índice atual do transform
+    const style = window.getComputedStyle(track).transform;
+    // transform matrix: matrix(1,0,0,1,tx,ty) — tx é o offset em px
+    let current = 0;
+    if (style && style !== 'none') {
+      const matrix = style.match(/matrix.*\((.+)\)/);
+      if (matrix) {
+        const values = matrix[1].split(', ');
+        const tx = parseFloat(values[4]);
+        const slideW = track.offsetWidth / track.children.length;
+        current = slideW > 0 ? Math.round(-tx / (track.offsetWidth)) : 0;
+      }
+    }
+
+    const total = track.children.length;
+    if (dx < 0) {
+      // swipe esquerda → próximo
+      const next = (current + 1) % total;
+      goToBanner(next);
+    } else {
+      // swipe direita → anterior
+      const prev = (current - 1 + total) % total;
+      goToBanner(prev);
     }
   }, { passive: true });
 };
