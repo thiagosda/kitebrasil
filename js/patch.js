@@ -587,7 +587,7 @@ window.renderLocationBanners = function() {
     const img = BANNER_IMAGES[i % BANNER_IMAGES.length];
     return `
     <div class="banner-slide" onclick="window.open('${safeUrl(b.url)}','_blank','noopener,noreferrer')">
-      <div class="banner-slide-inner banner-with-image" style="background-image:url('${img}');background:${esc(b.gradient)}">
+      <div class="banner-slide-inner banner-with-image" style="--banner-img:url('${img}')">`
         <div class="banner-img-overlay"></div>
         <div class="bs-icon" style="background:${esc(b.iconBg)};color:${esc(b.iconColor)}">${esc(b.icon)}</div>
         <div class="bs-body">
