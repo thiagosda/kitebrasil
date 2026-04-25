@@ -605,25 +605,30 @@ window.renderLocationBanners = function() {
     `<span class="dot ${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></span>`
   ).join('');
 
-  // Setas de navegação
+  // Remove setas antigas se existirem
   const carousel = track.closest('.banner-carousel');
-  if (carousel && banners.length > 1) {
-    // Remove setas antigas se existirem
+  if (carousel) {
     carousel.querySelectorAll('.banner-arrow').forEach(el => el.remove());
-
-    const prev = document.createElement('button');
-    prev.className = 'banner-arrow banner-arrow-prev';
-    prev.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-    prev.onclick = (e) => { e.stopPropagation(); goToBanner(_bannerIdx - 1); };
-
-    const next = document.createElement('button');
-    next.className = 'banner-arrow banner-arrow-next';
-    next.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-    next.onclick = (e) => { e.stopPropagation(); goToBanner(_bannerIdx + 1); };
-
-    carousel.appendChild(prev);
-    carousel.appendChild(next);
   }
+
+  // Swipe com o dedo
+  let _touchStartX = 0;
+  let _touchStartY = 0;
+
+  track.addEventListener('touchstart', e => {
+    _touchStartX = e.touches[0].clientX;
+    _touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  track.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - _touchStartX;
+    const dy = e.changedTouches[0].clientY - _touchStartY;
+    // Só considera swipe horizontal (ignora scroll vertical)
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+      if (dx < 0) goToBanner(_bannerIdx + 1); // swipe esquerda → próximo
+      else         goToBanner(_bannerIdx - 1); // swipe direita → anterior
+    }
+  }, { passive: true });
 
   track.style.transform = 'translateX(0)';
   startBannerTimer();
