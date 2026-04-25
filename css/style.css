@@ -958,6 +958,7 @@ body {
   background-size: cover !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
+  background-image: var(--banner-img) !important;
   min-height: 100px;
 }
 .banner-img-overlay {
