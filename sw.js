@@ -1,12 +1,12 @@
 // ── KiteInforma Service Worker ─────────────────
-const CACHE_NAME = 'kiteinforma-v3';
+const CACHE_NAME = 'kiteinforma-v4';
 const ASSETS = [
   '/',
   '/index.html',
   '/css/style.css',
   '/js/data.js',
-  '/js/app.js',
-  '/js/patch.js'
+  '/js/app.js'
+  // patch.js excluído do cache — sempre busca versão nova
 ];
 
 self.addEventListener('install', e => {
@@ -36,6 +36,8 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = e.request.url;
   if (url.includes('open-meteo.com') || url.includes('marine-api')) return;
+  // patch.js nunca vai para o cache — sempre busca do servidor
+  if (url.includes('patch.js')) return;
   e.respondWith(
     caches.match(e.request).then(cached => {
       const network = fetch(e.request).then(res => {
