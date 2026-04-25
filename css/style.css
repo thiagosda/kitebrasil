@@ -951,3 +951,34 @@ body {
   transition: background 0.2s;
 }
 .pwa-ios-dismiss:hover { background: #2466b0; }
+
+/* ── Banner com imagem de fundo ────────────────── */
+.banner-with-image {
+  position: relative;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  min-height: 100px;
+}
+.banner-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(7,22,36,0.82) 0%,
+    rgba(7,22,36,0.55) 100%
+  );
+  border-radius: inherit;
+}
+.banner-with-image .bs-icon,
+.banner-with-image .bs-body,
+.banner-with-image .bs-arrow {
+  position: relative;
+  z-index: 1;
+}
+.banner-with-image .bs-title {
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+.banner-with-image .bs-sub {
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
