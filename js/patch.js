@@ -584,7 +584,10 @@ window.startBannerTimer = function() {
     _dragging = false;
     const dx = e.changedTouches[0].clientX - _x0;
     if (Math.abs(dx) > 35) {
-      dx < 0 ? goToBanner(_bannerIdx + 1) : goToBanner(_bannerIdx - 1);
+      const total = getCurrentBanners().length;
+      const current = _bannerIdx ?? 0;
+      if (dx < 0) goToBanner(current + 1);        // esquerda → próximo
+      else         goToBanner((current - 1 + total) % total); // direita → anterior
     }
   }, { passive: true });
 };
