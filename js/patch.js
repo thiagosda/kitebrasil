@@ -557,45 +557,42 @@ function showIOSBanner() {
   banner.style.display = 'block';
 }
 
-// ── 16. Banners com imagem de fundo do Canva ─────
-// Coloque suas imagens em: images/banner1.jpg e images/banner2.jpg
-// Tamanho recomendado no Canva: 800x200px
-
+// ── 16. Banners com imagem de fundo ──────────────
 const BANNER_IMAGES = [
   'imagens/banner1.jpg',
   'imagens/banner2.jpg',
 ];
 
-const _origRenderLocationBanners = window.renderLocationBanners;
 window.renderLocationBanners = function() {
   const track = document.getElementById('banner-track');
   const dots  = document.getElementById('banner-dots');
   if (!track || !dots) return;
 
   const banners = getCurrentBanners();
-
   const safeUrl = (url) => {
     if (typeof url !== 'string') return '#';
     const t = url.trim();
-    if (t.startsWith('https://') || t.startsWith('mailto:')) return t;
-    return '#';
+    return (t.startsWith('https://') || t.startsWith('mailto:')) ? t : '#';
   };
   const esc = (s) => String(s).replace(/[&<>"']/g, c =>
-    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]);
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 
   track.innerHTML = banners.map((b, i) => {
     const img = BANNER_IMAGES[i % BANNER_IMAGES.length];
-    return `
-    <div class="banner-slide" onclick="window.open('${safeUrl(b.url)}','_blank','noopener,noreferrer')">
-      <div class="banner-slide-inner banner-with-image" style="--banner-img:url('${img}')">`
-        <div class="banner-img-overlay"></div>
-        <div class="bs-icon" style="background:${esc(b.iconBg)};color:${esc(b.iconColor)}">${esc(b.icon)}</div>
-        <div class="bs-body">
+    const hasImg = img && i < BANNER_IMAGES.length;
+    const bgStyle = hasImg
+      ? `background:${esc(b.gradient)};background-image:url(${img});background-size:cover;background-position:center;background-repeat:no-repeat;`
+      : `background:${esc(b.gradient)};`;
+    return `<div class="banner-slide" onclick="window.open('${safeUrl(b.url)}','_blank','noopener,noreferrer')">
+      <div class="banner-slide-inner" style="position:relative;${bgStyle}">
+        ${hasImg ? '<div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(7,22,36,0.75),rgba(7,22,36,0.45));border-radius:inherit"></div>' : ''}
+        <div class="bs-icon" style="background:${esc(b.iconBg)};color:${esc(b.iconColor)};position:relative;z-index:1">${esc(b.icon)}</div>
+        <div class="bs-body" style="position:relative;z-index:1">
           <div class="bs-tag">${esc(b.tag)}</div>
           <div class="bs-title">${esc(b.title)}</div>
           <div class="bs-sub">${esc(b.sub)}</div>
         </div>
-        <div class="bs-arrow">›</div>
+        <div class="bs-arrow" style="position:relative;z-index:1">›</div>
       </div>
     </div>`;
   }).join('');
