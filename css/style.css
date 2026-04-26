@@ -1008,3 +1008,10 @@ body {
 .banner-arrow-next { right: 10px; }
 
 .banner-carousel { position: relative; }
+
+/* ── Ocultar forecast ──────────────────────────── */
+#forecast-row,
+.forecast-row,
+.forecast-card {
+  display: none !important;
+}
