@@ -291,30 +291,8 @@ window.renderNextTide = function() {
   if (lbl) lbl.textContent = i18n('next_tide_lbl');
 };
 
-// ── 9. renderForecast bilíngue ───────────────────
-window.renderForecast = function(fc) {
-  const row = document.getElementById('forecast-row');
-  if (!row || !fc.length) return;
-  const lang = (typeof currentLang !== 'undefined') ? currentLang : 'pt';
-  const dayNamesEN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const dayNamesPT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-
-  row.innerHTML = fc.map(f => {
-    const c = scoreColor(f.score);
-    let dayLabel = f.day;
-    if (f.day === 'Hoje' || f.day === 'Today') {
-      dayLabel = i18n('today');
-    } else if (lang === 'en') {
-      const idx = dayNamesPT.indexOf(f.day);
-      if (idx >= 0) dayLabel = dayNamesEN[idx];
-    }
-    return `<div class="forecast-card ${f.active ? 'active' : ''}">
-      <div class="fc-day">${dayLabel}</div>
-      <div class="fc-score" style="background:${c.bg};color:${c.text}">${f.score}</div>
-      <div class="fc-wind">${f.wind} ${i18n('knots_lbl')}</div>
-    </div>`;
-  }).join('');
-};
+// ── 9. renderForecast — desativado ───────────────
+window.renderForecast = function() { /* seção removida */ };
 
 // ── 10. renderSchools bilíngue ───────────────────
 window.renderSchools = function() {
@@ -616,7 +594,7 @@ window.renderLocationBanners = function() {
 
     if (hasImg) {
       return `<div class="banner-slide" onclick="window.open('${safeUrl(b.url)}','_blank','noopener,noreferrer')" style="cursor:pointer">
-        <div style="width:100%;background-image:url(${img});background-size:contain;background-position:center;background-repeat:no-repeat;border-radius:14px;aspect-ratio:3/1;min-height:160px;"></div>
+        <div style="width:100%;background-image:url(${img});background-size:100% 100%;background-position:center;background-repeat:no-repeat;border-radius:14px;aspect-ratio:8/3;"></div>
       </div>`;
     }
 
